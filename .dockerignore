@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+.agents
+control-gastos-ia
+Dockerfile
+deploy.js
+nginx.conf
+walkthrough.md
+task.md
+implementation_plan.md
+deployment_guide.md
