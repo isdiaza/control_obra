@@ -61,21 +61,39 @@ export const FinancialControl: React.FC<FinancialControlProps> = ({
   const [unitPrice, setUnitPrice] = useState('');
 
   useEffect(() => {
+    let active = true;
     if (proveedores.length > 0 && !selectedProveedorId) {
-      setSelectedProveedorId(proveedores[0].id);
+      Promise.resolve().then(() => {
+        if (active) setSelectedProveedorId(proveedores[0].id);
+      });
     }
+    return () => {
+      active = false;
+    };
   }, [proveedores, selectedProveedorId]);
 
   useEffect(() => {
+    let active = true;
     if (clientes.length > 0 && !selectedClienteId) {
-      setSelectedClienteId(clientes[0].id);
+      Promise.resolve().then(() => {
+        if (active) setSelectedClienteId(clientes[0].id);
+      });
     }
+    return () => {
+      active = false;
+    };
   }, [clientes, selectedClienteId]);
 
   React.useEffect(() => {
+    let active = true;
     if (uniqueObras.length > 0 && (!obra || !uniqueObras.includes(obra))) {
-      setObra(uniqueObras[0]);
+      Promise.resolve().then(() => {
+        if (active) setObra(uniqueObras[0]);
+      });
     }
+    return () => {
+      active = false;
+    };
   }, [uniqueObras, obra]);
 
   // Adjust categories when transaction type changes

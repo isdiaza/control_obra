@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Worker, WeekAttendance, ObraFilters, CompanyInfo, Obra } from '../types';
+import { dbService } from '../utils/dbService';
 
 const DEFAULT_WORKERS: Worker[] = [
   { id: 'w_1', name: 'Israel Flores', role: 'Maestro de Obra', obra: 'Torre Alfa', sueldoDiario: 650, avatarColor: '#8B5CF6' },
@@ -133,128 +134,85 @@ export const useAttendanceData = () => {
 
   // Load / Initialize database
   useEffect(() => {
-    const isInitialized = localStorage.getItem('dibersa_initialized') === 'true';
-
-    let finalWorkers: Worker[] = [];
-    let finalAttendance: WeekAttendance[] = [];
-    let finalObras: Obra[] = [];
-
-    if (!isInitialized) {
-      finalWorkers = [...DEFAULT_WORKERS];
-      finalObras = [...DEFAULT_OBRAS];
-      const mockGrid: WeekAttendance[] = [];
-      const weeks = ['2026-W24', '2026-W25'];
-
-      weeks.forEach((wkId) => {
-        finalWorkers.forEach((w) => {
-          if (wkId === '2026-W24') {
-            mockGrid.push({
-              workerId: w.id,
-              weekId: wkId,
-              lunes: Math.random() > 0.05,
-              martes: Math.random() > 0.05,
-              miercoles: Math.random() > 0.05,
-              jueves: Math.random() > 0.05,
-              viernes: Math.random() > 0.05,
-              sabado: Math.random() > 0.1,
-            });
-          } else {
-            mockGrid.push({
-              workerId: w.id,
-              weekId: wkId,
-              lunes: Math.random() > 0.05,
-              martes: Math.random() > 0.05,
-              miercoles: Math.random() > 0.1,
-              jueves: false,
-              viernes: false,
-              sabado: false,
-            });
-          }
-        });
-      });
-
-      finalAttendance = mockGrid;
-      localStorage.setItem('dibersa_workers_obra', JSON.stringify(finalWorkers));
-      localStorage.setItem('dibersa_attendance_grid', JSON.stringify(finalAttendance));
-      localStorage.setItem('dibersa_obras_catalogue', JSON.stringify(finalObras));
-      localStorage.setItem('dibersa_company_info', JSON.stringify(DEFAULT_COMPANY_INFO));
-      localStorage.setItem('dibersa_initialized', 'true');
-      setCompanyInfo(DEFAULT_COMPANY_INFO);
-    } else {
-      const storedWorkers = localStorage.getItem('dibersa_workers_obra');
-      const storedAttendance = localStorage.getItem('dibersa_attendance_grid');
-      const storedObras = localStorage.getItem('dibersa_obras_catalogue');
-      const storedCompany = localStorage.getItem('dibersa_company_info');
-      
-      finalWorkers = storedWorkers ? JSON.parse(storedWorkers) : [];
-      finalAttendance = storedAttendance ? JSON.parse(storedAttendance) : [];
-      finalObras = storedObras ? JSON.parse(storedObras) : [];
-      
-      if (storedCompany) {
-        setCompanyInfo(JSON.parse(storedCompany));
-      } else {
-        localStorage.setItem('dibersa_company_info', JSON.stringify(DEFAULT_COMPANY_INFO));
-        setCompanyInfo(DEFAULT_COMPANY_INFO);
-      }
-    }
-
-    // Auto-sync/migration: Register any Obra name referenced in workers or transactions that is missing from the catalogue
-    const referencedObraNames = new Set<string>();
-    finalWorkers.forEach(w => {
-      if (w.obra) referencedObraNames.add(w.obra);
-    });
-
-    const storedTxs = localStorage.getItem('dibersa_financial_transactions');
-    if (storedTxs) {
+    const loadData = async () => {
       try {
-        const txs = JSON.parse(storedTxs);
-        if (Array.isArray(txs)) {
-          txs.forEach((t: any) => {
-            if (t.obra) referencedObraNames.add(t.obra);
-          });
-        }
-      } catch (e) {
-        console.error("Error parsing transactions for migration", e);
-      }
-    }
+        const fetchedWorkers = await dbService.getWorkers();
+        const fetchedAttendance = await dbService.getAttendance();
+        const fetchedObras = await dbService.getObras();
+        const fetchedCompany = await dbService.getCompanyInfo();
 
-    let modifiedObras = false;
-    referencedObraNames.forEach(name => {
-      const exists = finalObras.some(o => o.name === name);
-      if (!exists) {
-        // If it's a default obra, populate with default info, otherwise placeholder
-        const defaultMatch = DEFAULT_OBRAS.find(def => def.name === name);
-        if (defaultMatch) {
-          finalObras.push({ ...defaultMatch });
+        if (fetchedWorkers.length === 0 && fetchedObras.length === 0) {
+          // Seed defaults
+          const finalWorkers = [...DEFAULT_WORKERS];
+          const finalObras = [...DEFAULT_OBRAS];
+          const mockGrid: WeekAttendance[] = [];
+          const weeks = ['2026-W24', '2026-W25'];
+
+          weeks.forEach((wkId) => {
+            finalWorkers.forEach((w) => {
+              if (wkId === '2026-W24') {
+                mockGrid.push({
+                  workerId: w.id,
+                  weekId: wkId,
+                  lunes: Math.random() > 0.05,
+                  martes: Math.random() > 0.05,
+                  miercoles: Math.random() > 0.05,
+                  jueves: Math.random() > 0.05,
+                  viernes: Math.random() > 0.05,
+                  sabado: Math.random() > 0.1,
+                });
+              } else {
+                mockGrid.push({
+                  workerId: w.id,
+                  weekId: wkId,
+                  lunes: Math.random() > 0.05,
+                  martes: Math.random() > 0.05,
+                  miercoles: Math.random() > 0.1,
+                  jueves: false,
+                  viernes: false,
+                  sabado: false,
+                });
+              }
+            });
+          });
+
+          for (const o of finalObras) {
+            await dbService.saveObra(o);
+          }
+          for (const w of finalWorkers) {
+            await dbService.saveWorker(w);
+          }
+          await dbService.saveAllAttendance(mockGrid);
+          await dbService.saveCompanyInfo(DEFAULT_COMPANY_INFO);
+          localStorage.setItem('dibersa_initialized', 'true');
+
+          setWorkers(finalWorkers);
+          setAttendance(mockGrid);
+          setObras(finalObras);
+          setCompanyInfo(DEFAULT_COMPANY_INFO);
         } else {
-          finalObras.push({
-            id: `o_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-            name: name,
-            location: 'Dirección por definir',
-            supervisor: 'Por asignar',
-            budget: 0,
-            startDate: new Date().toISOString().split('T')[0],
-            status: 'Activa'
-          });
+          setWorkers(fetchedWorkers);
+          setAttendance(fetchedAttendance);
+          setObras(fetchedObras);
+          if (fetchedCompany) {
+            setCompanyInfo(fetchedCompany);
+          } else {
+            await dbService.saveCompanyInfo(DEFAULT_COMPANY_INFO);
+            setCompanyInfo(DEFAULT_COMPANY_INFO);
+          }
         }
-        modifiedObras = true;
+      } catch (err) {
+        console.error("Error loading DIBERSA data:", err);
       }
-    });
+    };
 
-    if (modifiedObras) {
-      localStorage.setItem('dibersa_obras_catalogue', JSON.stringify(finalObras));
-    }
-
-    setWorkers(finalWorkers);
-    setAttendance(finalAttendance);
-    setObras(finalObras);
+    loadData();
   }, []);
 
   const saveState = (updatedWorkers: Worker[], updatedAttendance: WeekAttendance[]) => {
     setWorkers(updatedWorkers);
     setAttendance(updatedAttendance);
-    localStorage.setItem('dibersa_workers_obra', JSON.stringify(updatedWorkers));
-    localStorage.setItem('dibersa_attendance_grid', JSON.stringify(updatedAttendance));
+    dbService.saveAllAttendance(updatedAttendance).catch(console.error);
   };
 
   // Toggle single attendance day
@@ -349,6 +307,7 @@ export const useAttendanceData = () => {
       });
     });
 
+    dbService.saveWorker(newWorker).catch(console.error);
     saveState(updatedWorkers, updatedAttendance);
   };
 
@@ -356,6 +315,7 @@ export const useAttendanceData = () => {
   const deleteWorker = (id: string) => {
     const updatedWorkers = workers.filter(w => w.id !== id);
     const updatedAttendance = attendance.filter(a => a.workerId !== id);
+    dbService.deleteWorker(id).catch(console.error);
     saveState(updatedWorkers, updatedAttendance);
   };
 
@@ -371,9 +331,10 @@ export const useAttendanceData = () => {
     allergies?: string,
     diseases?: string
   ) => {
+    let updatedW: Worker | null = null;
     const updatedWorkers = workers.map(w => {
       if (w.id === id) {
-        return {
+        updatedW = {
           ...w,
           name,
           role,
@@ -384,44 +345,56 @@ export const useAttendanceData = () => {
           ...(allergies !== undefined ? { allergies } : {}),
           ...(diseases !== undefined ? { diseases } : {})
         };
+        return updatedW;
       }
       return w;
     });
+
+    if (updatedW) {
+      dbService.saveWorker(updatedW).catch(console.error);
+    }
     saveState(updatedWorkers, attendance);
   };
 
   const updateCompanyInfo = (newInfo: CompanyInfo) => {
     setCompanyInfo(newInfo);
-    localStorage.setItem('dibersa_company_info', JSON.stringify(newInfo));
+    dbService.saveCompanyInfo(newInfo).catch(console.error);
   };
 
   const saveObrasState = (updatedObras: Obra[]) => {
     setObras(updatedObras);
-    localStorage.setItem('dibersa_obras_catalogue', JSON.stringify(updatedObras));
   };
 
   const addObra = (name: string, location: string, supervisor: string, budget: number, startDate: string, status: 'Activa' | 'Finalizada' | 'Pausada') => {
     const id = `o_${Date.now()}`;
     const newObra: Obra = { id, name, location, supervisor, budget, startDate, status };
     const updated = [...obras, newObra];
+    dbService.saveObra(newObra).catch(console.error);
     saveObrasState(updated);
   };
 
   const updateObra = (id: string, name: string, location: string, supervisor: string, budget: number, startDate: string, status: 'Activa' | 'Finalizada' | 'Pausada') => {
-    const updated = obras.map(o => o.id === id ? { id, name, location, supervisor, budget, startDate, status } : o);
-    
+    const newObra: Obra = { id, name, location, supervisor, budget, startDate, status };
+    const updated = obras.map(o => o.id === id ? newObra : o);
+    dbService.saveObra(newObra).catch(console.error);
+
     // Cascading update of Obra Name
     const oldObra = obras.find(o => o.id === id);
     if (oldObra && oldObra.name !== name) {
       const updatedWorkers = workers.map(w => w.obra === oldObra.name ? { ...w, obra: name } : w);
+      
+      updatedWorkers.forEach(w => {
+        if (w.obra === name) {
+          dbService.saveWorker(w).catch(console.error);
+        }
+      });
+
       saveState(updatedWorkers, attendance);
       
-      const storedTxs = localStorage.getItem('dibersa_financial_transactions');
-      if (storedTxs) {
-        const txs = JSON.parse(storedTxs);
-        const updatedTxs = txs.map((t: any) => t.obra === oldObra.name ? { ...t, obra: name } : t);
-        localStorage.setItem('dibersa_financial_transactions', JSON.stringify(updatedTxs));
-      }
+      dbService.getTransactions().then(txs => {
+        const updatedTxs = txs.map(t => t.obra === oldObra.name ? { ...t, obra: name } : t);
+        dbService.saveAllTransactions(updatedTxs).catch(console.error);
+      }).catch(console.error);
     }
     
     saveObrasState(updated);
@@ -437,42 +410,37 @@ export const useAttendanceData = () => {
       return;
     }
     
-    const storedTxs = localStorage.getItem('dibersa_financial_transactions');
-    if (storedTxs) {
-      const txs = JSON.parse(storedTxs);
-      const hasTxs = txs.some((t: any) => t.obra === obra.name);
+    dbService.getTransactions().then(txs => {
+      const hasTxs = txs.some(t => t.obra === obra.name);
       if (hasTxs) {
         alert(`No se puede eliminar la obra "${obra.name}" porque tiene movimientos financieros registrados en el Control Financiero.`);
         return;
       }
-    }
-    
-    const updated = obras.filter(o => o.id !== id);
-    saveObrasState(updated);
+
+      const updated = obras.filter(o => o.id !== id);
+      dbService.deleteObra(id).catch(console.error);
+      saveObrasState(updated);
+    }).catch(err => {
+      console.error("Error deleting obra:", err);
+    });
   };
 
   // Reset Simulation Data (restore mock seed data)
   const resetAllData = () => {
-    localStorage.removeItem('dibersa_workers_obra');
-    localStorage.removeItem('dibersa_attendance_grid');
-    localStorage.removeItem('dibersa_financial_transactions');
-    localStorage.removeItem('dibersa_obras_catalogue');
-    localStorage.removeItem('dibersa_proveedores_catalogue');
-    localStorage.removeItem('dibersa_company_info');
-    localStorage.removeItem('dibersa_initialized');
-    window.location.reload();
+    dbService.resetAll().then(() => {
+      window.location.reload();
+    }).catch(console.error);
   };
 
   // Clear all data to leave database completely empty
   const clearAllData = () => {
-    localStorage.setItem('dibersa_workers_obra', '[]');
-    localStorage.setItem('dibersa_attendance_grid', '[]');
-    localStorage.setItem('dibersa_financial_transactions', '[]');
-    localStorage.setItem('dibersa_obras_catalogue', '[]');
-    localStorage.setItem('dibersa_proveedores_catalogue', '[]');
-    localStorage.setItem('dibersa_company_info', JSON.stringify(DEFAULT_COMPANY_INFO));
-    localStorage.setItem('dibersa_initialized', 'true');
-    window.location.reload();
+    const clearDb = async () => {
+      await dbService.resetAll();
+      await dbService.saveCompanyInfo(DEFAULT_COMPANY_INFO);
+      localStorage.setItem('dibersa_initialized', 'true');
+      window.location.reload();
+    };
+    clearDb().catch(console.error);
   };
 
   // Unique Obras list extracted from the official catalogue
@@ -547,8 +515,8 @@ export const useAttendanceData = () => {
     const totalPayroll = activeRows.reduce((sum, r) => sum + r.pagoSemanal, 0);
 
     // General attendance rate for the week
-    let totalPossibleDays = totalWorkers * 6; // 6 days a week
-    let totalAttendedDays = activeRows.reduce((sum, r) => sum + r.daysAttended, 0);
+    const totalPossibleDays = totalWorkers * 6; // 6 days a week
+    const totalAttendedDays = activeRows.reduce((sum, r) => sum + r.daysAttended, 0);
 
     const attendanceRate = totalPossibleDays > 0 
       ? Math.round((totalAttendedDays / totalPossibleDays) * 100) 

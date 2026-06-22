@@ -153,7 +153,18 @@ export const HistorialReportes: React.FC = () => {
   const [reports, setReports] = useState<SavedReport[]>([]);
   const [viewing, setViewing] = useState<SavedReport | null>(null);
   const refresh = () => setReports(getReports());
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) {
+        setReports(getReports());
+      }
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDelete = (id: string) => {
     if (!confirm('Eliminar este reporte del historial?')) return;

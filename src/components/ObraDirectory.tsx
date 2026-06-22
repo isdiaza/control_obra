@@ -286,7 +286,7 @@ export const ObraDirectory: React.FC<ObraDirectoryProps> = ({
               <select
                 className="input select"
                 value={status}
-                onChange={(e) => setStatus(e.target.value as any)}
+                onChange={(e) => setStatus(e.target.value as 'Activa' | 'Finalizada' | 'Pausada')}
                 style={{ fontSize: '0.85rem', padding: '0.45rem 0.6rem', width: '100%' }}
               >
                 <option value="Activa">Activa / En Ejecución</option>
@@ -443,7 +443,7 @@ export const ObraDirectory: React.FC<ObraDirectoryProps> = ({
                         <select
                           className="input select"
                           value={editStatus}
-                          onChange={(e) => setEditStatus(e.target.value as any)}
+                          onChange={(e) => setEditStatus(e.target.value as 'Activa' | 'Finalizada' | 'Pausada')}
                           style={{ fontSize: '0.8rem', padding: '0.35rem 0.5rem', width: '100%' }}
                         >
                           <option value="Activa">Activa</option>

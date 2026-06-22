@@ -268,9 +268,15 @@ export const WorkerDirectory: React.FC<DirectoryProps> = ({
   };
 
   React.useEffect(() => {
+    let active = true;
     if (uniqueObras.length > 0 && !obra) {
-      setObra(uniqueObras[0]);
+      Promise.resolve().then(() => {
+        if (active) setObra(uniqueObras[0]);
+      });
     }
+    return () => {
+      active = false;
+    };
   }, [uniqueObras, obra]);
 
   const handleSubmit = (e: React.FormEvent) => {

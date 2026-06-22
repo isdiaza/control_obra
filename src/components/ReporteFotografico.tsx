@@ -160,7 +160,7 @@ export const ReporteFotografico: React.FC = () => {
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Calidad:</span>
               <select
                 value={photoQuality}
-                onChange={(e) => setPhotoQuality(e.target.value as any)}
+                onChange={(e) => setPhotoQuality(e.target.value as 'alta' | 'media' | 'baja')}
                 style={{
                   backgroundColor: 'var(--bg-input)',
                   color: 'var(--text-primary)',

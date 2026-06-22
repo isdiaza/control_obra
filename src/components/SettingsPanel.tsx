@@ -30,8 +30,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [companySaveSuccess, setCompanySaveSuccess] = useState(false);
 
   useEffect(() => {
-    setCompanyName(companyInfo.name);
-    setCompanySubtitle(companyInfo.subtitle);
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) {
+        setCompanyName(companyInfo.name);
+        setCompanySubtitle(companyInfo.subtitle);
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, [companyInfo]);
 
   const handleCompanySubmit = (e: React.FormEvent) => {
@@ -48,6 +56,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   // Calculate approximate LocalStorage size
   useEffect(() => {
+    let active = true;
     let totalLength = 0;
     const keys = [
       'dibersa_workers_obra',
@@ -67,7 +76,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
     // LocalStorage stores UTF-16, so 2 bytes per char
     const kb = ((totalLength * 2) / 1024).toFixed(2);
-    setDbSize(`${kb} KB`);
+    Promise.resolve().then(() => {
+      if (active) {
+        setDbSize(`${kb} KB`);
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, [workersCount, transactionsCount, attendanceCount]);
 
   // Export JSON Backup

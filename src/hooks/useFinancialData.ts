@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FinancialTransaction, Proveedor, Cliente } from '../types';
 import { getWeekId } from './useAttendanceData';
+import { dbService } from '../utils/dbService';
 
 const DEFAULT_CLIENTES: Cliente[] = [
   { id: 'c_1', name: 'Grupo Inmobiliario Regio', contactName: 'Lic. Roberto Villarreal', phone: '81-2222-3333', email: 'rvillarreal@girsa.mx', address: 'Av. Vasconcelos 800, San Pedro' },
@@ -177,47 +178,65 @@ export const useFinancialData = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
 
   useEffect(() => {
-    const isInitialized = localStorage.getItem('dibersa_initialized') === 'true';
-    const stored = localStorage.getItem('dibersa_financial_transactions');
-    const storedProveedores = localStorage.getItem('dibersa_proveedores_catalogue');
-    
-    if (!isInitialized && !stored) {
-      localStorage.setItem('dibersa_financial_transactions', JSON.stringify(SEED_TRANSACTIONS));
-      setTransactions(SEED_TRANSACTIONS);
-    } else {
-      setTransactions(stored ? JSON.parse(stored) : []);
-    }
+    let active = true;
+    const loadData = async () => {
+      try {
+        const fetchedT = await dbService.getTransactions();
+        const fetchedP = await dbService.getProveedores();
+        const fetchedC = await dbService.getClientes();
 
-    let finalProveedores: Proveedor[] = [];
-    if (storedProveedores) {
-      finalProveedores = JSON.parse(storedProveedores);
-    } else {
-      finalProveedores = [...DEFAULT_PROVEEDORES];
-      localStorage.setItem('dibersa_proveedores_catalogue', JSON.stringify(finalProveedores));
-    }
-    setProveedores(finalProveedores);
+        const isInitialized = localStorage.getItem('dibersa_initialized') === 'true';
 
-    // Clientes
-    const storedClientes = localStorage.getItem('dibersa_clientes_catalogue');
-    let finalClientes: Cliente[] = [];
-    if (storedClientes) {
-      finalClientes = JSON.parse(storedClientes);
-    } else {
-      finalClientes = [...DEFAULT_CLIENTES];
-      localStorage.setItem('dibersa_clientes_catalogue', JSON.stringify(finalClientes));
-    }
-    setClientes(finalClientes);
+        let finalTransactions = fetchedT;
+        let finalProveedores = fetchedP;
+        let finalClientes = fetchedC;
+
+        // Check if we need to seed
+        if (!isInitialized && fetchedT.length === 0 && fetchedP.length === 0 && fetchedC.length === 0) {
+          finalTransactions = [...SEED_TRANSACTIONS];
+          finalProveedores = [...DEFAULT_PROVEEDORES];
+          finalClientes = [...DEFAULT_CLIENTES];
+
+          // Seed in database/local fallback
+          await dbService.saveAllTransactions(finalTransactions);
+          for (const p of finalProveedores) {
+            await dbService.saveProveedor(p);
+          }
+          for (const c of finalClientes) {
+            await dbService.saveCliente(c);
+          }
+          localStorage.setItem('dibersa_initialized', 'true');
+        } else {
+          // Individual fallback seeding if database is empty but initialized
+          if (fetchedP.length === 0 && !isInitialized) {
+            finalProveedores = [...DEFAULT_PROVEEDORES];
+            for (const p of finalProveedores) {
+              await dbService.saveProveedor(p);
+            }
+          }
+          if (fetchedC.length === 0 && !isInitialized) {
+            finalClientes = [...DEFAULT_CLIENTES];
+            for (const c of finalClientes) {
+              await dbService.saveCliente(c);
+            }
+          }
+        }
+
+        if (active) {
+          setTransactions(finalTransactions);
+          setProveedores(finalProveedores);
+          setClientes(finalClientes);
+        }
+      } catch (err) {
+        console.error("Error loading financial data:", err);
+      }
+    };
+
+    loadData();
+    return () => {
+      active = false;
+    };
   }, []);
-
-  const saveTransactions = (updated: FinancialTransaction[]) => {
-    setTransactions(updated);
-    localStorage.setItem('dibersa_financial_transactions', JSON.stringify(updated));
-  };
-
-  const saveProveedores = (updated: Proveedor[]) => {
-    setProveedores(updated);
-    localStorage.setItem('dibersa_proveedores_catalogue', JSON.stringify(updated));
-  };
 
   const addTransaction = (
     description: string,
@@ -251,13 +270,13 @@ export const useFinancialData = () => {
       unitPrice
     };
 
-    const updated = [newTx, ...transactions];
-    saveTransactions(updated);
+    setTransactions(prev => [newTx, ...prev]);
+    dbService.saveTransaction(newTx).catch(console.error);
   };
 
   const deleteTransaction = (id: string) => {
-    const updated = transactions.filter(t => t.id !== id);
-    saveTransactions(updated);
+    setTransactions(prev => prev.filter(t => t.id !== id));
+    dbService.deleteTransaction(id).catch(console.error);
   };
 
   const addProveedor = (name: string, contactName: string, phone: string, email: string, address: string) => {
@@ -269,13 +288,14 @@ export const useFinancialData = () => {
       email,
       address
     };
-    const updated = [...proveedores, newP];
-    saveProveedores(updated);
+    setProveedores(prev => [...prev, newP]);
+    dbService.saveProveedor(newP).catch(console.error);
   };
 
   const updateProveedor = (id: string, name: string, contactName: string, phone: string, email: string, address: string) => {
-    const updated = proveedores.map(p => p.id === id ? { id, name, contactName, phone, email, address } : p);
-    saveProveedores(updated);
+    const updatedP: Proveedor = { id, name, contactName, phone, email, address };
+    setProveedores(prev => prev.map(p => p.id === id ? updatedP : p));
+    dbService.saveProveedor(updatedP).catch(console.error);
   };
 
   const deleteProveedor = (id: string) => {
@@ -284,14 +304,8 @@ export const useFinancialData = () => {
       alert("No se puede eliminar este proveedor porque tiene transacciones de compra registradas.");
       return;
     }
-    const updated = proveedores.filter(p => p.id !== id);
-    saveProveedores(updated);
-  };
-
-  // ---- Clientes CRUD ----
-  const saveClientes = (updated: Cliente[]) => {
-    setClientes(updated);
-    localStorage.setItem('dibersa_clientes_catalogue', JSON.stringify(updated));
+    setProveedores(prev => prev.filter(p => p.id !== id));
+    dbService.deleteProveedor(id).catch(console.error);
   };
 
   const addCliente = (name: string, contactName: string, phone: string, email: string, address: string) => {
@@ -303,13 +317,14 @@ export const useFinancialData = () => {
       email,
       address
     };
-    const updated = [...clientes, newC];
-    saveClientes(updated);
+    setClientes(prev => [...prev, newC]);
+    dbService.saveCliente(newC).catch(console.error);
   };
 
   const updateCliente = (id: string, name: string, contactName: string, phone: string, email: string, address: string) => {
-    const updated = clientes.map(c => c.id === id ? { id, name, contactName, phone, email, address } : c);
-    saveClientes(updated);
+    const updatedC: Cliente = { id, name, contactName, phone, email, address };
+    setClientes(prev => prev.map(c => c.id === id ? updatedC : c));
+    dbService.saveCliente(updatedC).catch(console.error);
   };
 
   const deleteCliente = (id: string) => {
@@ -318,17 +333,22 @@ export const useFinancialData = () => {
       alert("No se puede eliminar este cliente porque tiene transacciones de ingreso registradas.");
       return;
     }
-    const updated = clientes.filter(c => c.id !== id);
-    saveClientes(updated);
+    setClientes(prev => prev.filter(c => c.id !== id));
+    dbService.deleteCliente(id).catch(console.error);
   };
 
   const resetFinancialData = () => {
-    localStorage.removeItem('dibersa_financial_transactions');
-    localStorage.removeItem('dibersa_proveedores_catalogue');
-    localStorage.removeItem('dibersa_clientes_catalogue');
-    saveTransactions(SEED_TRANSACTIONS);
-    saveProveedores(DEFAULT_PROVEEDORES);
-    saveClientes(DEFAULT_CLIENTES);
+    const resetData = async () => {
+      try {
+        setTransactions(SEED_TRANSACTIONS);
+        setProveedores(DEFAULT_PROVEEDORES);
+        setClientes(DEFAULT_CLIENTES);
+        await dbService.resetFinancialData(SEED_TRANSACTIONS, DEFAULT_PROVEEDORES, DEFAULT_CLIENTES);
+      } catch (err) {
+        console.error("Error resetting financial data:", err);
+      }
+    };
+    resetData();
   };
 
   return {
