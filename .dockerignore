@@ -8,7 +8,6 @@ dist
 control-gastos-ia
 Dockerfile
 deploy.js
-nginx.conf
 walkthrough.md
 task.md
 implementation_plan.md
