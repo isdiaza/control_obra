@@ -141,7 +141,9 @@ export const useAttendanceData = () => {
         const fetchedObras = await dbService.getObras();
         const fetchedCompany = await dbService.getCompanyInfo();
 
-        if (fetchedWorkers.length === 0 && fetchedObras.length === 0) {
+        const isInitialized = localStorage.getItem('dibersa_initialized') === 'true';
+
+        if (!isInitialized && fetchedWorkers.length === 0 && fetchedObras.length === 0) {
           // Seed defaults
           const finalWorkers = [...DEFAULT_WORKERS];
           const finalObras = [...DEFAULT_OBRAS];
