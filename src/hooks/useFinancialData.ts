@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FinancialTransaction, Proveedor, Cliente } from '../types';
 import { getWeekId } from './useAttendanceData';
 import { dbService } from '../utils/dbService';
+import { isSupabaseConfigured } from '../utils/supabase';
 
 const DEFAULT_CLIENTES: Cliente[] = [
   { id: 'c_1', name: 'Grupo Inmobiliario Regio', contactName: 'Lic. Roberto Villarreal', phone: '81-2222-3333', email: 'rvillarreal@girsa.mx', address: 'Av. Vasconcelos 800, San Pedro' },
@@ -186,13 +187,16 @@ export const useFinancialData = () => {
         const fetchedC = await dbService.getClientes();
 
         const isInitialized = localStorage.getItem('dibersa_initialized') === 'true';
+        // When Supabase is configured, NEVER auto-seed — the user manages their own data.
+        // Only seed when using local fallback AND the DB has never been initialized.
+        const shouldSeed = !isSupabaseConfigured && !isInitialized;
 
         let finalTransactions = fetchedT;
         let finalProveedores = fetchedP;
         let finalClientes = fetchedC;
 
         // Check if we need to seed
-        if (!isInitialized && fetchedT.length === 0 && fetchedP.length === 0 && fetchedC.length === 0) {
+        if (shouldSeed && fetchedT.length === 0 && fetchedP.length === 0 && fetchedC.length === 0) {
           finalTransactions = [...SEED_TRANSACTIONS];
           finalProveedores = [...DEFAULT_PROVEEDORES];
           finalClientes = [...DEFAULT_CLIENTES];
@@ -206,20 +210,6 @@ export const useFinancialData = () => {
             await dbService.saveCliente(c);
           }
           localStorage.setItem('dibersa_initialized', 'true');
-        } else {
-          // Individual fallback seeding if database is empty but initialized
-          if (fetchedP.length === 0 && !isInitialized) {
-            finalProveedores = [...DEFAULT_PROVEEDORES];
-            for (const p of finalProveedores) {
-              await dbService.saveProveedor(p);
-            }
-          }
-          if (fetchedC.length === 0 && !isInitialized) {
-            finalClientes = [...DEFAULT_CLIENTES];
-            for (const c of finalClientes) {
-              await dbService.saveCliente(c);
-            }
-          }
         }
 
         if (active) {

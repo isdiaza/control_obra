@@ -1,11 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dibersa</title>
+    <!-- iOS/iPhone 14 Pro: viewport-fit=cover ensures content fills the Dynamic Island area -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- iOS web app meta tags for a native-like feel -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Control Obra" />
+    <!-- Theme color for browser chrome (matches dark bg) -->
+    <meta name="theme-color" content="#0B0E14" />
+    <title>Control de Obra · Dibersa</title>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

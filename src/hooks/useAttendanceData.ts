@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Worker, WeekAttendance, ObraFilters, CompanyInfo, Obra } from '../types';
 import { dbService } from '../utils/dbService';
+import { isSupabaseConfigured } from '../utils/supabase';
 
 const DEFAULT_WORKERS: Worker[] = [
   { id: 'w_1', name: 'Israel Flores', role: 'Maestro de Obra', obra: 'Torre Alfa', sueldoDiario: 650, avatarColor: '#8B5CF6' },
@@ -142,8 +143,9 @@ export const useAttendanceData = () => {
         const fetchedCompany = await dbService.getCompanyInfo();
 
         const isInitialized = localStorage.getItem('dibersa_initialized') === 'true';
+        const shouldSeed = !isSupabaseConfigured && !isInitialized;
 
-        if (!isInitialized && fetchedWorkers.length === 0 && fetchedObras.length === 0) {
+        if (shouldSeed && fetchedWorkers.length === 0 && fetchedObras.length === 0) {
           // Seed defaults
           const finalWorkers = [...DEFAULT_WORKERS];
           const finalObras = [...DEFAULT_OBRAS];

@@ -480,6 +480,51 @@ export const dbService = {
     }
   },
 
+  async seedAllData(
+    workers: Worker[],
+    obras: Obra[],
+    attendance: WeekAttendance[],
+    companyInfo: CompanyInfo,
+    transactions: FinancialTransaction[],
+    proveedores: Proveedor[],
+    clientes: Cliente[]
+  ): Promise<void> {
+    // Clear all existing data
+    await this.resetAll();
+
+    // Seed company info
+    await this.saveCompanyInfo(companyInfo);
+
+    // Seed Obras
+    for (const o of obras) {
+      await this.saveObra(o);
+    }
+
+    // Seed Workers
+    for (const w of workers) {
+      await this.saveWorker(w);
+    }
+
+    // Seed Attendance
+    await this.saveAllAttendance(attendance);
+
+    // Seed Proveedores
+    for (const p of proveedores) {
+      await this.saveProveedor(p);
+    }
+
+    // Seed Clientes
+    for (const c of clientes) {
+      await this.saveCliente(c);
+    }
+
+    // Seed Transactions
+    await this.saveAllTransactions(transactions);
+
+    // Set initialization flag
+    localStorage.setItem('dibersa_initialized', 'true');
+  },
+
   // ==========================================
   // GENERAL RESET
   // ==========================================

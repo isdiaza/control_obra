@@ -52,10 +52,18 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iPhone safe area support (notch / Dynamic Island / home bar) */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* Prevent iOS text size adjustment */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 * {
   box-sizing: border-box;
+  /* Optimize tap highlight for iOS */
+  -webkit-tap-highlight-color: rgba(139, 92, 246, 0.15);
 }
 
 /* Base UI Components */
@@ -80,6 +88,9 @@ body {
   padding: var(--space-sm) var(--space-md);
   outline: none;
   font-family: var(--font-family);
+  /* Minimum 16px prevents iOS auto-zoom on focus */
+  font-size: 1rem;
+  min-height: 44px; /* Apple HIG minimum touch target */
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -95,6 +106,9 @@ body {
   background-position: right var(--space-sm) center;
   background-size: 1rem;
   padding-right: var(--space-xl);
+  /* Minimum 16px prevents iOS auto-zoom on focus */
+  font-size: 1rem;
+  min-height: 44px;
 }
 
 .badge {
@@ -577,15 +591,28 @@ tr.obra-group-subtotal:hover {
   margin-top: auto;
 }
 
-/* Mobile Responsiveness (iPhone / Mobile views) */
+/* ============================================================
+   MOBILE RESPONSIVENESS — iPhone 14 Pro and larger (≤768px)
+   iPhone 14 Pro: 393×852 logical pixels (3x physical)
+   ============================================================ */
 @media screen and (max-width: 768px) {
-  /* Header adjustment */
+
+  /* --- GLOBAL SPACING with iPhone safe areas --- */
+  #root {
+    /* Pad sides for Dynamic Island/notch and home bar */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* --- HEADER --- */
   .main-header {
     flex-direction: column !important;
     gap: var(--space-sm) !important;
-    padding: var(--space-md) !important;
+    /* top padding includes safe area (Dynamic Island) */
+    padding: calc(var(--space-md) + env(safe-area-inset-top)) var(--space-md) var(--space-md) !important;
     align-items: stretch !important;
-    position: static !important; /* avoid locking too much height on mobile */
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
   }
 
   .header-info {
@@ -593,13 +620,15 @@ tr.obra-group-subtotal:hover {
   }
 
   .header-info h1 {
-    font-size: 1.1rem !important;
-    flex-direction: column;
+    font-size: 1rem !important;
+    flex-wrap: wrap !important;
     gap: 0.25rem !important;
+    justify-content: center !important;
   }
 
-  .header-info h1 span[style*="font-size: 1.1rem"] {
-    font-size: 0.95rem !important;
+  /* Hide long subtitle on very small screens */
+  .header-info h1 > span:last-child {
+    display: none !important;
   }
 
   .header-info p {
@@ -607,19 +636,23 @@ tr.obra-group-subtotal:hover {
   }
 
   .header-actions {
-    flex-direction: column !important;
+    flex-direction: row !important;
     gap: var(--space-xs) !important;
     align-items: stretch !important;
     width: 100%;
+    flex-wrap: wrap !important;
   }
 
   .header-payroll, .header-clock {
     justify-content: center !important;
-    width: 100% !important;
-    font-size: 0.75rem !important;
+    flex: 1 1 auto !important;
+    font-size: 0.72rem !important;
+    min-height: 44px !important; /* Apple HIG touch target */
+    display: flex !important;
+    align-items: center !important;
   }
 
-  /* Sidebar Navigation adapted for Mobile View (horizontal scrollable bar) */
+  /* --- SIDEBAR → horizontal scrollable bottom nav --- */
   .app-layout-container {
     flex-direction: column !important;
   }
@@ -629,39 +662,69 @@ tr.obra-group-subtotal:hover {
     height: auto !important;
     flex-direction: row !important;
     overflow-x: auto !important;
+    overflow-y: hidden !important;
     white-space: nowrap !important;
-    padding: 0.5rem 1rem !important;
-    gap: 0.75rem !important;
+    /* Horizontal padding + safe area for side notch */
+    padding: 0.4rem calc(1rem + env(safe-area-inset-left)) 0.4rem calc(1rem + env(safe-area-inset-right)) !important;
+    gap: 0.5rem !important;
     border-right: none !important;
     border-bottom: 1px solid var(--border-color) !important;
     position: sticky !important;
     top: 0 !important;
-    z-index: 50 !important;
-    scrollbar-width: none !important; /* Firefox */
-    -webkit-overflow-scrolling: touch;
+    z-index: 90 !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    background-color: rgba(21, 26, 35, 0.92) !important;
   }
 
   .sidebar-menu::-webkit-scrollbar {
-    display: none !important; /* Safari and Chrome */
+    display: none !important;
   }
 
   .sidebar-title {
     display: none !important;
   }
 
+  /* Touch targets ≥44px per Apple HIG */
   .sidebar-btn {
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.8rem !important;
+    padding: 0.6rem 0.875rem !important;
+    font-size: 0.78rem !important;
     flex-shrink: 0 !important;
     width: auto !important;
     justify-content: center !important;
+    min-height: 44px !important;
+    border-radius: var(--radius-md) !important;
+    gap: 0.35rem !important;
+  }
+
+  /* Hide text labels in sidebar when screen is very narrow */
+  @media screen and (max-width: 430px) {
+    .sidebar-btn span {
+      display: none !important;
+    }
+    .sidebar-btn {
+      padding: 0.6rem 0.75rem !important;
+    }
   }
 
   .sidebar-btn-settings {
     margin-top: 0 !important;
   }
 
-  /* Filters card adjustments */
+  /* --- MAIN CONTENT AREA --- */
+  main, [role="main"] {
+    padding: var(--space-sm) !important;
+  }
+
+  /* --- CARDS --- */
+  .card {
+    border-radius: var(--radius-md) !important;
+    padding: var(--space-md) !important;
+  }
+
+  /* --- FILTERS / TOOLBAR --- */
   .filters-card {
     padding: var(--space-sm) !important;
     gap: var(--space-sm) !important;
@@ -678,21 +741,68 @@ tr.obra-group-subtotal:hover {
     justify-content: center !important;
   }
 
-  /* Table first column sticky for easier swiping */
+  /* --- INPUTS & SELECTS: prevent iOS zoom (must be ≥16px) --- */
+  input,
+  textarea,
+  select,
+  .input {
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+
+  /* Buttons: ensure minimum touch target */
+  button {
+    min-height: 44px !important;
+    touch-action: manipulation !important;
+  }
+
+  /* Exception: very small icon-only buttons (attendance checkboxes etc.) */
+  button.attendance-btn {
+    min-height: 36px !important;
+    min-width: 36px !important;
+  }
+
+  /* --- TABLES: horizontal scroll with sticky first column --- */
+  .table-container {
+    border-radius: var(--radius-md) !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
   .table-container th:first-child,
   .table-container td:first-child {
     position: sticky !important;
     left: 0 !important;
     background-color: var(--bg-card) !important;
     z-index: 10 !important;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.4) !important;
   }
-  
+
   .table-container th:first-child {
     z-index: 11 !important;
   }
 
-  /* Financial control column layouts */
+  th, td {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* --- MODALS: full-screen on iPhone --- */
+  [role="dialog"],
+  .modal,
+  div[style*="position: fixed"][style*="inset: 0"],
+  div[style*="position: fixed"][style*="z-index: 1000"],
+  div[style*="position: fixed"][style*="z-index: 999"] {
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Modal inner containers: allow full height scroll */
+  div[style*="max-height"] {
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* --- FINANCIAL / GRID COLUMNS --- */
   .main-content-col {
     grid-column: span 1 !important;
   }
@@ -700,6 +810,30 @@ tr.obra-group-subtotal:hover {
   .sticky-sidebar {
     position: static !important;
     top: auto !important;
+  }
+
+  /* --- DASHBOARD KPI GRID: 2 columns on iPhone --- */
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    padding: var(--space-sm) !important;
+    gap: var(--space-sm) !important;
+  }
+
+  /* --- SETTINGS PANEL: compact layout --- */
+  .settings-section {
+    flex-direction: column !important;
+  }
+}
+
+/* Extra small screens: iPhone SE, iPhone 12 mini (≤390px) */
+@media screen and (max-width: 390px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  th, td {
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.5rem !important;
   }
 }
 
