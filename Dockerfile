@@ -10,19 +10,11 @@ COPY . .
 # Remove nested sub-project from root build
 RUN rm -rf control-gastos-ia
 
-# Declare build-time args (set these in Dokploy → Environment or Build Args)
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
-
-# Also accept them as plain ENV vars (Dokploy "Environment" tab sets these)
-ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
-ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
-
-# Write .env so Vite ALWAYS finds the variables, regardless of how
-# Dokploy injects them (ARG vs ENV).  Vite reads .env at build time.
-RUN echo "VITE_SUPABASE_URL=${VITE_SUPABASE_URL}" > .env && \
-    echo "VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}" >> .env && \
-    echo "=== .env written ===" && cat .env
+# Write Supabase credentials to .env so Vite picks them up at build time.
+# The anon key is a public client-side key (safe to include here — it's
+# already visible in the compiled JS bundle that ships to every browser).
+RUN echo "VITE_SUPABASE_URL=http://control-obras-supabase-079695-76-13-101-174.sslip.io" > .env && \
+    echo "VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3ODIxNTg4MzIsImV4cCI6MTg5MzQ1NjAwMCwicm9sZSI6ImFub24iLCJpc3MiOiJzdXBhYmFzZSJ9.89ESaDvmgM4qYvyBUl_4PyJcJiKk1Dubik0YyJr_Wxg" >> .env
 
 RUN npm run build
 
