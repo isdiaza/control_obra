@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Bot, User, Loader2 } from 'lucide-react';
 import type { Worker, WeekAttendance } from '../types';
+import { getWeekId } from '../hooks/useAttendanceData';
 
 interface Message {
   id: string;
@@ -48,9 +49,8 @@ export const ChatWidget: React.FC = () => {
       const workers: Worker[] = storedWorkers ? JSON.parse(storedWorkers) : [];
       const attendance: WeekAttendance[] = storedAttendance ? JSON.parse(storedAttendance) : [];
       
-      // Determine active week (e.g. 2026-W25)
-      // We will look at Week 25 primarily, but can check what is in state
-      const targetWeekId = '2026-W25';
+      // Determine active week dynamically (always use real current date)
+      const targetWeekId = getWeekId(new Date());
 
       const q = query.toLowerCase();
 

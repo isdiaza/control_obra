@@ -125,7 +125,7 @@ export const useAttendanceData = () => {
   const [obras, setObras] = useState<Obra[]>([]);
   
   // Start filter on current week
-  const currentWeek = useMemo(() => getWeekId(new Date('2026-06-17T12:00:00')), []);
+  const currentWeek = useMemo(() => getWeekId(new Date()), []);
 
   const [filters, setFilters] = useState<ObraFilters>({
     search: '',
