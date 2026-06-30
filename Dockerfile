@@ -10,9 +10,12 @@ COPY . .
 # Remove nested sub-project from root build
 RUN rm -rf control-gastos-ia
 
-# Write Supabase credentials to .env so Vite picks them up at build time.
-RUN echo "VITE_SUPABASE_URL=http://control-obras-supabase-079695-76-13-101-174.sslip.io" > .env && \
+# VITE_SUPABASE_URL uses the app's own HTTPS domain + nginx proxy path.
+# Browser calls HTTPS same-origin -> no mixed content.
+# nginx receives /supabase-api/* and proxies internally to HTTP Supabase.
+RUN echo "VITE_SUPABASE_URL=https://controlobra.dibersa.com.mx/supabase-api" > .env && \
     echo "VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3ODIxNTg4MzIsImV4cCI6MTg5MzQ1NjAwMCwicm9sZSI6ImFub24iLCJpc3MiOiJzdXBhYmFzZSJ9.89ESaDvmgM4qYvyBUl_4PyJcJiKk1Dubik0YyJr_Wxg" >> .env
+
 
 RUN npm run build
 
