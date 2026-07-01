@@ -360,7 +360,7 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
       {/* Contracts list */}
       {filteredContratos.length === 0 ? (
         <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <Clock size={40} style={{ color: 'var(--text-muted)', marginBottom: 12 }} />
+          <Clock size={40} style={{ color: 'var(--text-muted)', marginBottom: 12, marginLeft: 'auto', marginRight: 'auto' }} />
           <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>No hay contratos a destajo registrados.</p>
           <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Crea el primero con el botón "Nuevo Contrato".</p>
         </div>
@@ -379,98 +379,180 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
 
       {/* ─── Form Modal ─────────────────────────────────────────────────── */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', padding: 28 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                {editingId ? 'Editar Contrato' : 'Nuevo Contrato a Destajo'}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10, 15, 30, 0.85)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', padding: 32, border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                {editingId ? 'Editar Contrato de Destajo' : 'Nuevo Contrato a Destajo'}
               </h3>
-              <button onClick={() => setShowForm(false)} className="btn btn-secondary" style={{ padding: 6 }}>
+              <button 
+                onClick={() => setShowForm(false)} 
+                style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 'var(--radius-sm)', padding: 8, cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <X size={16} />
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {/* Obra */}
-              <div style={{ gridColumn: '1/-1' }}>
-                <label className="form-label">Obra *</label>
-                <select className={`form-input ${formErrors.obra ? 'error' : ''}`} value={form.obra} onChange={e => setForm(f => ({ ...f, obra: e.target.value }))}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Obra *</label>
+                <select 
+                  className={`input select ${formErrors.obra ? 'error' : ''}`} 
+                  value={form.obra} 
+                  onChange={e => setForm(f => ({ ...f, obra: e.target.value }))}
+                  style={{ width: '100%', border: formErrors.obra ? '1px solid var(--color-danger)' : undefined }}
+                >
                   <option value="">Selecciona la obra...</option>
                   {obras.map(o => <option key={o.id} value={o.name}>{o.name}</option>)}
                 </select>
-                {formErrors.obra && <span style={{ fontSize: 12, color: 'var(--color-danger)' }}>{formErrors.obra}</span>}
+                {formErrors.obra && <span style={{ fontSize: 11, color: 'var(--color-danger)', marginTop: 2 }}>{formErrors.obra}</span>}
               </div>
 
               {/* Concepto */}
-              <div style={{ gridColumn: '1/-1' }}>
-                <label className="form-label">Concepto de trabajo *</label>
-                <input className={`form-input ${formErrors.concepto ? 'error' : ''}`} placeholder="Ej: Yeso en muros interiores sala principal" value={form.concepto} onChange={e => setForm(f => ({ ...f, concepto: e.target.value }))} />
-                {formErrors.concepto && <span style={{ fontSize: 12, color: 'var(--color-danger)' }}>{formErrors.concepto}</span>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Concepto de trabajo *</label>
+                <input 
+                  className="input" 
+                  placeholder="Ej: Yeso en muros interiores sala principal" 
+                  value={form.concepto} 
+                  onChange={e => setForm(f => ({ ...f, concepto: e.target.value }))}
+                  style={{ width: '100%', border: formErrors.concepto ? '1px solid var(--color-danger)' : undefined }}
+                />
+                {formErrors.concepto && <span style={{ fontSize: 11, color: 'var(--color-danger)', marginTop: 2 }}>{formErrors.concepto}</span>}
               </div>
 
               {/* Contratista */}
-              <div style={{ gridColumn: '1/-1' }}>
-                <label className="form-label">Contratista / Destajero *</label>
-                <input className={`form-input ${formErrors.contratista ? 'error' : ''}`} placeholder="Nombre del contratista" value={form.contratista} onChange={e => setForm(f => ({ ...f, contratista: e.target.value }))} />
-                {formErrors.contratista && <span style={{ fontSize: 12, color: 'var(--color-danger)' }}>{formErrors.contratista}</span>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Contratista / Destajero *</label>
+                <input 
+                  className="input" 
+                  placeholder="Nombre del contratista o maestro" 
+                  value={form.contratista} 
+                  onChange={e => setForm(f => ({ ...f, contratista: e.target.value }))}
+                  style={{ width: '100%', border: formErrors.contratista ? '1px solid var(--color-danger)' : undefined }}
+                />
+                {formErrors.contratista && <span style={{ fontSize: 11, color: 'var(--color-danger)', marginTop: 2 }}>{formErrors.contratista}</span>}
               </div>
 
-              {/* Unidad */}
-              <div>
-                <label className="form-label">Unidad</label>
-                <select className="form-input" value={form.unidad} onChange={e => setForm(f => ({ ...f, unidad: e.target.value }))}>
-                  {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
-                </select>
+              {/* Grid 2 Columnas */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unidad</label>
+                  <select className="input select" value={form.unidad} onChange={e => setForm(f => ({ ...f, unidad: e.target.value }))} style={{ width: '100%' }}>
+                    {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fecha de inicio</label>
+                  <input type="date" className="input" value={form.fechaInicio} onChange={e => setForm(f => ({ ...f, fechaInicio: e.target.value }))} style={{ width: '100%' }} />
+                </div>
               </div>
 
-              {/* Fecha */}
-              <div>
-                <label className="form-label">Fecha de inicio</label>
-                <input type="date" className="form-input" value={form.fechaInicio} onChange={e => setForm(f => ({ ...f, fechaInicio: e.target.value }))} />
+              {/* Grid 2 Columnas: Finanzas */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cantidad total ({form.unidad}) *</label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    className="input" 
+                    value={form.cantidadTotal || ''} 
+                    onChange={e => setForm(f => ({ ...f, cantidadTotal: parseFloat(e.target.value) || 0 }))}
+                    style={{ width: '100%', border: formErrors.cantidadTotal ? '1px solid var(--color-danger)' : undefined }}
+                  />
+                  {formErrors.cantidadTotal && <span style={{ fontSize: 11, color: 'var(--color-danger)', marginTop: 2 }}>{formErrors.cantidadTotal}</span>}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio por {form.unidad} ($) *</label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    className="input" 
+                    value={form.precioUnitario || ''} 
+                    onChange={e => setForm(f => ({ ...f, precioUnitario: parseFloat(e.target.value) || 0 }))}
+                    style={{ width: '100%', border: formErrors.precioUnitario ? '1px solid var(--color-danger)' : undefined }}
+                  />
+                  {formErrors.precioUnitario && <span style={{ fontSize: 11, color: 'var(--color-danger)', marginTop: 2 }}>{formErrors.precioUnitario}</span>}
+                </div>
               </div>
 
-              {/* Cantidad total */}
-              <div>
-                <label className="form-label">Cantidad total ({form.unidad}) *</label>
-                <input type="number" min="0" className={`form-input ${formErrors.cantidadTotal ? 'error' : ''}`} value={form.cantidadTotal || ''} onChange={e => setForm(f => ({ ...f, cantidadTotal: parseFloat(e.target.value) || 0 }))} />
-                {formErrors.cantidadTotal && <span style={{ fontSize: 12, color: 'var(--color-danger)' }}>{formErrors.cantidadTotal}</span>}
-              </div>
+              {/* Grid 2 Columnas: Avance y Estado */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Avance actual ({form.unidad})</label>
+                  <input type="number" min="0" max={form.cantidadTotal} className="input" value={form.cantidadAvance || ''} onChange={e => setForm(f => ({ ...f, cantidadAvance: parseFloat(e.target.value) || 0 }))} style={{ width: '100%' }} />
+                </div>
 
-              {/* Precio unitario */}
-              <div>
-                <label className="form-label">Precio por {form.unidad} ($) *</label>
-                <input type="number" min="0" className={`form-input ${formErrors.precioUnitario ? 'error' : ''}`} value={form.precioUnitario || ''} onChange={e => setForm(f => ({ ...f, precioUnitario: parseFloat(e.target.value) || 0 }))} />
-                {formErrors.precioUnitario && <span style={{ fontSize: 12, color: 'var(--color-danger)' }}>{formErrors.precioUnitario}</span>}
-              </div>
-
-              {/* Avance */}
-              <div>
-                <label className="form-label">Avance actual ({form.unidad})</label>
-                <input type="number" min="0" max={form.cantidadTotal} className="form-input" value={form.cantidadAvance || ''} onChange={e => setForm(f => ({ ...f, cantidadAvance: parseFloat(e.target.value) || 0 }))} />
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="form-label">Estado</label>
-                <select className="form-input" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as ContratoDestajo['status'] }))}>
-                  {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Estado</label>
+                  <select className="input select" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as ContratoDestajo['status'] }))} style={{ width: '100%' }}>
+                    {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
               </div>
 
               {/* Preview total */}
               {form.cantidadTotal > 0 && form.precioUnitario > 0 && (
-                <div style={{ gridColumn: '1/-1', background: 'rgba(99,102,241,0.1)', borderRadius: 10, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Monto total del contrato:</span>
-                  <span style={{ fontSize: 18, fontWeight: 700, color: '#818cf8' }}>
+                <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px dashed rgba(99,102,241,0.25)', borderRadius: 'var(--radius-md)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Monto total proyectado:</span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8' }}>
                     {fmt(form.cantidadTotal * form.precioUnitario)}
                   </span>
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: 12, marginTop: 20, justifyContent: 'flex-end' }}>
-              <button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancelar</button>
-              <button className="btn btn-primary" onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Footer Buttons */}
+            <div style={{ display: 'flex', gap: 14, marginTop: 28, justifyContent: 'flex-end' }}>
+              <button 
+                type="button"
+                onClick={() => setShowForm(false)} 
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.6rem 1.25rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  minHeight: 44,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button"
+                onClick={handleSave} 
+                style={{
+                  backgroundColor: 'var(--accent-primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.6rem 1.25rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  minHeight: 44,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 4px 10px rgba(139, 92, 246, 0.2)',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.filter = 'none'}
+              >
                 <Save size={16} /> {editingId ? 'Guardar Cambios' : 'Crear Contrato'}
               </button>
             </div>
@@ -480,52 +562,101 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
 
       {/* ─── Pago Modal ──────────────────────────────────────────────────── */}
       {pagoModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 420, padding: 28 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10, 15, 30, 0.85)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: 440, padding: 32, border: '1px solid rgba(255, 255, 255, 0.08)', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                 Registrar Pago
               </h3>
-              <button onClick={() => setPagoModal(null)} className="btn btn-secondary" style={{ padding: 6 }}>
+              <button 
+                onClick={() => setPagoModal(null)} 
+                style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 'var(--radius-sm)', padding: 8, cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <X size={16} />
               </button>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '10px 14px', marginBottom: 18 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{pagoModal.concepto}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{pagoModal.contratista} · {pagoModal.obra}</div>
-              <div style={{ marginTop: 8, display: 'flex', gap: 12, fontSize: 13 }}>
-                <span style={{ color: '#34d399' }}>Pagado: {fmt(calcTotalPagado(pagoModal))}</span>
-                <span style={{ color: '#fbbf24' }}>Pendiente: {fmt(calcPendientePago(pagoModal))}</span>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 'var(--radius-md)', padding: '14px 18px', marginBottom: 20 }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{pagoModal.concepto}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>{pagoModal.contratista} · {pagoModal.obra}</div>
+              <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+                <span style={{ color: '#34d399', fontWeight: 600 }}>Pagado: {fmt(calcTotalPagado(pagoModal))}</span>
+                <span style={{ color: '#fbbf24', fontWeight: 600 }}>Pendiente: {fmt(calcPendientePago(pagoModal))}</span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <label className="form-label">Fecha del pago</label>
-                <input type="date" className="form-input" value={pagoForm.fecha} onChange={e => setPagoForm(f => ({ ...f, fecha: e.target.value }))} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fecha del pago</label>
+                <input type="date" className="input" value={pagoForm.fecha} onChange={e => setPagoForm(f => ({ ...f, fecha: e.target.value }))} style={{ width: '100%' }} />
               </div>
-              <div>
-                <label className="form-label">Importe ($) *</label>
-                <input type="number" min="0" className="form-input" placeholder="0.00" value={pagoForm.monto} onChange={e => setPagoForm(f => ({ ...f, monto: e.target.value }))} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Importe ($) *</label>
+                <input type="number" min="0" className="input" placeholder="0.00" value={pagoForm.monto} onChange={e => setPagoForm(f => ({ ...f, monto: e.target.value }))} style={{ width: '100%' }} />
               </div>
-              <div>
-                <label className="form-label">Concepto / Nota</label>
-                <input className="form-input" placeholder="Ej: Primer adelanto" value={pagoForm.descripcion} onChange={e => setPagoForm(f => ({ ...f, descripcion: e.target.value }))} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Concepto / Nota</label>
+                <input className="input" placeholder="Ej: Primer adelanto" value={pagoForm.descripcion} onChange={e => setPagoForm(f => ({ ...f, descripcion: e.target.value }))} style={{ width: '100%' }} />
               </div>
             </div>
 
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 14 }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 18, lineHeight: '1.4' }}>
               ℹ️ Este pago se registrará automáticamente como gasto de la obra <strong>{pagoModal.obra}</strong> en Control Financiero.
             </p>
 
-            <div style={{ display: 'flex', gap: 12, marginTop: 18, justifyContent: 'flex-end' }}>
-              <button className="btn btn-secondary" onClick={() => setPagoModal(null)}>Cancelar</button>
+            <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'flex-end' }}>
+              <button 
+                type="button"
+                onClick={() => setPagoModal(null)} 
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.6rem 1.25rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  minHeight: 44,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                Cancelar
+              </button>
               <button
+                type="button"
                 className="btn btn-primary"
                 onClick={handleAddPago}
                 disabled={!pagoForm.monto || parseFloat(pagoForm.monto) <= 0}
-                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                style={{
+                  backgroundColor: (!pagoForm.monto || parseFloat(pagoForm.monto) <= 0) ? 'rgba(255,255,255,0.08)' : 'var(--accent-primary)',
+                  color: (!pagoForm.monto || parseFloat(pagoForm.monto) <= 0) ? 'var(--text-muted)' : 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.6rem 1.25rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  cursor: (!pagoForm.monto || parseFloat(pagoForm.monto) <= 0) ? 'not-allowed' : 'pointer',
+                  minHeight: 44,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => {
+                  if (pagoForm.monto && parseFloat(pagoForm.monto) > 0) {
+                    e.currentTarget.style.filter = 'brightness(1.1)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.filter = 'none';
+                }}
               >
                 <DollarSign size={16} /> Registrar Pago
               </button>
