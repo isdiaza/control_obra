@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
   Plus, ChevronDown, ChevronUp, Trash2, Edit3, DollarSign,
   TrendingUp, Clock, CheckCircle, PauseCircle, X, Save, CreditCard,
-  AlertTriangle, Building2
+  AlertTriangle, Building2, Printer
 } from 'lucide-react';
 import type { ContratoDestajo, Obra } from '../types';
 import {
@@ -309,21 +309,105 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
 
   return (
     <div className="animate-fade-in" style={{ padding: '0 4px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+      {/* ─── ENCABEZADO DE IMPRESIÓN (PDF) ─── */}
+      <table className="print-header-table">
+        <tbody>
+          <tr>
+            <td className="print-header-logo">
+              <div className="brand">DIBERSA</div>
+              <div className="subtitle">CONTROL DE OBRA Y FINANZAS</div>
+            </td>
+            <td className="print-header-title">
+              REPORTE DE CONTRATOS A DESTAJO
+            </td>
+            <td className="print-header-meta">
+              <strong>Obra:</strong> {filterObra === 'Todas' ? 'Todas las Obras' : filterObra}<br />
+              <strong>Fecha Emisión:</strong> {new Date().toLocaleDateString('es-MX')}<br />
+              <strong>Estado:</strong> Reporte General
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* ─── RESUMEN DE IMPRESIÓN (PDF) ─── */}
+      <div className="print-summary-box">
+        <div className="print-summary-card">
+          <div className="print-summary-card-label">Total Contratado</div>
+          <div className="print-summary-card-value">{fmt(kpis.totalContrato)}</div>
+        </div>
+        <div className="print-summary-card">
+          <div className="print-summary-card-label">Total Pagado</div>
+          <div className="print-summary-card-value success">{fmt(kpis.totalPagado)}</div>
+        </div>
+        <div className="print-summary-card">
+          <div className="print-summary-card-label">Pendiente por Pagar</div>
+          <div className="print-summary-card-value danger">{fmt(kpis.totalPendiente)}</div>
+        </div>
+        <div className="print-summary-card">
+          <div className="print-summary-card-label">Contratos Activos</div>
+          <div className="print-summary-card-value">{kpis.activos}</div>
+        </div>
+      </div>
+
+      {/* Header en Pantalla */}
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Contratos a Destajo</h2>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>
             Seguimiento de trabajos por avance y pago de destajeros
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm()); setFormErrors({}); }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Plus size={16} /> Nuevo Contrato
-        </button>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <button
+            onClick={() => window.print()}
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-md)',
+              padding: '0.6rem 1.25rem',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              minHeight: 44,
+              transition: 'all 0.2s',
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <Printer size={16} /> Generar Reporte (PDF)
+          </button>
+          <button
+            onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm()); setFormErrors({}); }}
+            style={{
+              backgroundColor: 'var(--accent-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              padding: '0.6rem 1.25rem',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              minHeight: 44,
+              boxShadow: '0 4px 6px rgba(139, 92, 246, 0.2)',
+              transition: 'all 0.2s',
+            }}
+            onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
+            onMouseOut={(e) => e.currentTarget.style.filter = 'none'}
+          >
+            <Plus size={16} /> Nuevo Contrato
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 24 }}>
+      <div className="no-print" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 24 }}>
         {[
           { label: 'Total Contratado', value: fmt(kpis.totalContrato), color: '#818cf8', icon: <Building2 size={18} /> },
           { label: 'Total Pagado', value: fmt(kpis.totalPagado), color: '#34d399', icon: <CheckCircle size={18} /> },
@@ -339,7 +423,7 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
       </div>
 
       {/* Filter */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+      <div className="no-print" style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
         {obraOptions.map(o => (
           <button
             key={o}
@@ -358,24 +442,26 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
       </div>
 
       {/* Contracts list */}
-      {filteredContratos.length === 0 ? (
-        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <Clock size={40} style={{ color: 'var(--text-muted)', marginBottom: 12, marginLeft: 'auto', marginRight: 'auto' }} />
-          <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>No hay contratos a destajo registrados.</p>
-          <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Crea el primero con el botón "Nuevo Contrato".</p>
-        </div>
-      ) : (
-        filteredContratos.map(c => (
-          <ContratoCard
-            key={c.id}
-            contrato={c}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onAddPago={setPagoModal}
-            onDeletePago={deletePago}
-          />
-        ))
-      )}
+      <div className="no-print">
+        {filteredContratos.length === 0 ? (
+          <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+            <Clock size={40} style={{ color: 'var(--text-muted)', marginBottom: 12, marginLeft: 'auto', marginRight: 'auto' }} />
+            <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>No hay contratos a destajo registrados.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Crea el primero con el botón "Nuevo Contrato".</p>
+          </div>
+        ) : (
+          filteredContratos.map(c => (
+            <ContratoCard
+              key={c.id}
+              contrato={c}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onAddPago={setPagoModal}
+              onDeletePago={deletePago}
+            />
+          ))
+        )}
+      </div>
 
       {/* ─── Form Modal ─────────────────────────────────────────────────── */}
       {showForm && (
@@ -664,6 +750,58 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
           </div>
         </div>
       )}
+      {/* ─── VISTA EXCLUSIVA DE IMPRESIÓN (PDF) ─── */}
+      <div className="print-only">
+        <h4 style={{ margin: '15px 0 10px 0', fontSize: '0.85rem', color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Detalle de Contratos de Destajos y Avances Registrados
+        </h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left' }}>Obra</th>
+              <th style={{ textAlign: 'left' }}>Concepto</th>
+              <th style={{ textAlign: 'left' }}>Destajero / Contratista</th>
+              <th style={{ textAlign: 'center' }}>Avance</th>
+              <th style={{ textAlign: 'right' }}>Total Contrato</th>
+              <th style={{ textAlign: 'right' }}>Total Pagado</th>
+              <th style={{ textAlign: 'right' }}>Pendiente</th>
+              <th style={{ textAlign: 'center' }}>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredContratos.map(c => {
+              const total = calcMontoContrato(c);
+              const pagado = calcTotalPagado(c);
+              const pendiente = calcPendientePago(c);
+              const pct = calcAvancePct(c);
+              return (
+                <tr key={c.id}>
+                  <td>{c.obra}</td>
+                  <td style={{ fontWeight: 600 }}>{c.concepto}</td>
+                  <td>{c.contratista}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    {c.cantidadAvance} / {c.cantidadTotal} {c.unidad} ({pct.toFixed(1)}%)
+                  </td>
+                  <td style={{ textAlign: 'right', fontFamily: 'monospace' }}>{fmt(total)}</td>
+                  <td style={{ textAlign: 'right', fontFamily: 'monospace', color: '#047857' }}>{fmt(pagado)}</td>
+                  <td style={{ textAlign: 'right', fontFamily: 'monospace', color: pendiente > 0 ? '#b91c1c' : '#334155' }}>{fmt(pendiente)}</td>
+                  <td style={{ textAlign: 'center' }}>{c.status}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Firmas en impresión */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', marginTop: '60px', padding: '0 40px' }}>
+          <div style={{ textAlign: 'center', borderTop: '1px solid #94a3b8', paddingTop: '8px', fontSize: '0.75rem', color: '#475569' }}>
+            Firma Residente de Obra
+          </div>
+          <div style={{ textAlign: 'center', borderTop: '1px solid #94a3b8', paddingTop: '8px', fontSize: '0.75rem', color: '#475569' }}>
+            Firma Dirección Administrativa
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
