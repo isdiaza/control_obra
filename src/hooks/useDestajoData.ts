@@ -1,24 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { ContratoDestajo, PagoDestajo, FinancialTransaction } from '../types';
 import { getWeekId } from './useAttendanceData';
+import { dbService } from '../utils/dbService';
 
-const DESTAJO_KEY = 'dibersa_destajo_contratos';
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-const loadContratos = (): ContratoDestajo[] => {
-  try {
-    return JSON.parse(localStorage.getItem(DESTAJO_KEY) || '[]');
-  } catch {
-    return [];
-  }
-};
-
-const persistContratos = (list: ContratoDestajo[]) => {
-  localStorage.setItem(DESTAJO_KEY, JSON.stringify(list));
-};
-
-// ─── Derived calculations (pure, no state) ──────────────────────────────────
+// ─── Derived calculations (pure, exported for use in UI) ─────────────────────
 
 export const calcMontoContrato = (c: ContratoDestajo) =>
   c.cantidadTotal * c.precioUnitario;
@@ -37,20 +22,20 @@ export const calcAvancePct = (c: ContratoDestajo) =>
     ? Math.min(100, (c.cantidadAvance / c.cantidadTotal) * 100)
     : 0;
 
-// ─── Hook ───────────────────────────────────────────────────────────────────
+// ─── Hook ────────────────────────────────────────────────────────────────────
 
 interface UseDestajoDataReturn {
   contratos: ContratoDestajo[];
   isLoading: boolean;
-  addContrato: (data: Omit<ContratoDestajo, 'id' | 'pagos'>) => ContratoDestajo;
-  updateContrato: (id: string, data: Partial<Omit<ContratoDestajo, 'id' | 'pagos'>>) => void;
-  deleteContrato: (id: string) => void;
+  addContrato: (data: Omit<ContratoDestajo, 'id' | 'pagos'>) => Promise<ContratoDestajo>;
+  updateContrato: (id: string, data: Partial<Omit<ContratoDestajo, 'id' | 'pagos'>>) => Promise<void>;
+  deleteContrato: (id: string) => Promise<void>;
   addPago: (
     contratoId: string,
     pago: Omit<PagoDestajo, 'id' | 'contratoId'>,
     onCreateTransaction: (tx: Omit<FinancialTransaction, 'id'>) => void
-  ) => void;
-  deletePago: (contratoId: string, pagoId: string) => void;
+  ) => Promise<void>;
+  deletePago: (contratoId: string, pagoId: string) => Promise<void>;
 }
 
 export function useDestajoData(): UseDestajoDataReturn {
@@ -58,68 +43,58 @@ export function useDestajoData(): UseDestajoDataReturn {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setContratos(loadContratos());
-    setIsLoading(false);
+    setIsLoading(true);
+    dbService.getDestajoContratos()
+      .then(setContratos)
+      .catch(() => setContratos([]))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const addContrato = useCallback(
-    (data: Omit<ContratoDestajo, 'id' | 'pagos'>): ContratoDestajo => {
-      const nuevo: ContratoDestajo = {
-        ...data,
-        id: `d_${Date.now()}`,
-        pagos: [],
-      };
-      setContratos(prev => {
-        const next = [...prev, nuevo];
-        persistContratos(next);
-        return next;
-      });
+    async (data: Omit<ContratoDestajo, 'id' | 'pagos'>): Promise<ContratoDestajo> => {
+      const nuevo: ContratoDestajo = { ...data, id: `d_${Date.now()}`, pagos: [] };
+      await dbService.saveDestajoContrato(nuevo);
+      setContratos(prev => [...prev, nuevo]);
       return nuevo;
     },
     []
   );
 
   const updateContrato = useCallback(
-    (id: string, data: Partial<Omit<ContratoDestajo, 'id' | 'pagos'>>) => {
+    async (id: string, data: Partial<Omit<ContratoDestajo, 'id' | 'pagos'>>) => {
       setContratos(prev => {
         const next = prev.map(c => (c.id === id ? { ...c, ...data } : c));
-        persistContratos(next);
+        const updated = next.find(c => c.id === id);
+        if (updated) dbService.saveDestajoContrato(updated).catch(console.error);
         return next;
       });
     },
     []
   );
 
-  const deleteContrato = useCallback((id: string) => {
-    setContratos(prev => {
-      const next = prev.filter(c => c.id !== id);
-      persistContratos(next);
-      return next;
-    });
+  const deleteContrato = useCallback(async (id: string) => {
+    await dbService.deleteDestajoContrato(id);
+    setContratos(prev => prev.filter(c => c.id !== id));
   }, []);
 
   const addPago = useCallback(
-    (
+    async (
       contratoId: string,
       pagoData: Omit<PagoDestajo, 'id' | 'contratoId'>,
       onCreateTransaction: (tx: Omit<FinancialTransaction, 'id'>) => void
     ) => {
-      const pago: PagoDestajo = {
-        ...pagoData,
-        id: `p_${Date.now()}`,
-        contratoId,
-      };
+      const pago: PagoDestajo = { ...pagoData, id: `p_${Date.now()}`, contratoId };
 
       setContratos(prev => {
         const contrato = prev.find(c => c.id === contratoId);
         if (!contrato) return prev;
 
-        const next = prev.map(c =>
-          c.id === contratoId ? { ...c, pagos: [...c.pagos, pago] } : c
-        );
-        persistContratos(next);
+        const updated = { ...contrato, pagos: [...contrato.pagos, pago] };
+        const next = prev.map(c => (c.id === contratoId ? updated : c));
 
-        // Auto-create financial transaction so this pago appears as obra expense
+        dbService.saveDestajoPago(pago).catch(console.error);
+        dbService.saveDestajoContrato(updated).catch(console.error);
+
         onCreateTransaction({
           date: pagoData.fecha,
           description: `Destajo: ${contrato.concepto} — ${contrato.contratista}`,
@@ -136,25 +111,19 @@ export function useDestajoData(): UseDestajoDataReturn {
     []
   );
 
-  const deletePago = useCallback((contratoId: string, pagoId: string) => {
+  const deletePago = useCallback(async (contratoId: string, pagoId: string) => {
+    await dbService.deleteDestajoPago(pagoId);
     setContratos(prev => {
       const next = prev.map(c =>
         c.id === contratoId
           ? { ...c, pagos: c.pagos.filter(p => p.id !== pagoId) }
           : c
       );
-      persistContratos(next);
+      const updated = next.find(c => c.id === contratoId);
+      if (updated) dbService.saveDestajoContrato(updated).catch(console.error);
       return next;
     });
   }, []);
 
-  return {
-    contratos,
-    isLoading,
-    addContrato,
-    updateContrato,
-    deleteContrato,
-    addPago,
-    deletePago,
-  };
+  return { contratos, isLoading, addContrato, updateContrato, deleteContrato, addPago, deletePago };
 }

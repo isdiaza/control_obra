@@ -257,13 +257,13 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
     return e;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = validate(form);
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
     if (editingId) {
-      updateContrato(editingId, form);
+      await updateContrato(editingId, form);
     } else {
-      addContrato(form);
+      await addContrato(form);
     }
     setShowForm(false);
     setEditingId(null);
@@ -278,15 +278,15 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
     setFormErrors({});
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('¿Eliminar este contrato de destajo?')) deleteContrato(id);
+  const handleDelete = async (id: string) => {
+    if (confirm('¿Eliminar este contrato de destajo?')) await deleteContrato(id);
   };
 
-  const handleAddPago = () => {
+  const handleAddPago = async () => {
     if (!pagoModal) return;
     const monto = parseFloat(pagoForm.monto);
     if (!monto || monto <= 0) return;
-    addPago(pagoModal.id, { fecha: pagoForm.fecha, monto, descripcion: pagoForm.descripcion }, addTransaction);
+    await addPago(pagoModal.id, { fecha: pagoForm.fecha, monto, descripcion: pagoForm.descripcion }, addTransaction);
     setPagoModal(null);
     setPagoForm({ fecha: today(), monto: '', descripcion: '' });
   };

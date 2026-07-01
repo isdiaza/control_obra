@@ -548,5 +548,119 @@ export const dbService = {
       localStorage.removeItem(TRANSACTIONS_KEY);
       localStorage.removeItem('dibersa_initialized');
     }
-  }
+  },
+
+  // ==========================================
+  // DESTAJO CONTRATOS
+  // ==========================================
+
+  async getDestajoContratos(): Promise<import('../types').ContratoDestajo[]> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data: contratos, error: ce } = await supabase
+          .from('destajo_contratos')
+          .select('*')
+          .order('created_at', { ascending: true });
+        if (ce) throw ce;
+
+        const { data: pagos, error: pe } = await supabase
+          .from('destajo_pagos')
+          .select('*')
+          .order('created_at', { ascending: true });
+        if (pe) throw pe;
+
+        return (contratos || []).map(c => ({
+          id: c.id,
+          obra: c.obra,
+          concepto: c.concepto,
+          contratista: c.contratista,
+          unidad: c.unidad,
+          cantidadTotal: Number(c.cantidad_total),
+          precioUnitario: Number(c.precio_unitario),
+          cantidadAvance: Number(c.cantidad_avance),
+          fechaInicio: c.fecha_inicio || '',
+          status: c.status as 'Activo' | 'Completado' | 'Pausado',
+          pagos: (pagos || [])
+            .filter(p => p.contrato_id === c.id)
+            .map(p => ({
+              id: p.id,
+              contratoId: p.contrato_id,
+              fecha: p.fecha,
+              monto: Number(p.monto),
+              descripcion: p.descripcion || '',
+            })),
+        }));
+      } catch (_) {
+        // Table may not exist yet — fall back to localStorage
+        return JSON.parse(localStorage.getItem('dibersa_destajo_contratos') || '[]');
+      }
+    }
+    return JSON.parse(localStorage.getItem('dibersa_destajo_contratos') || '[]');
+  },
+
+  async saveDestajoContrato(c: import('../types').ContratoDestajo): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('destajo_contratos').upsert({
+          id: c.id,
+          obra: c.obra,
+          concepto: c.concepto,
+          contratista: c.contratista,
+          unidad: c.unidad,
+          cantidad_total: c.cantidadTotal,
+          precio_unitario: c.precioUnitario,
+          cantidad_avance: c.cantidadAvance,
+          fecha_inicio: c.fechaInicio || null,
+          status: c.status,
+        });
+        if (error) throw error;
+        return;
+      } catch (_) {
+        // Fall through to localStorage
+      }
+    }
+    const list: import('../types').ContratoDestajo[] = JSON.parse(localStorage.getItem('dibersa_destajo_contratos') || '[]');
+    const idx = list.findIndex(x => x.id === c.id);
+    if (idx !== -1) list[idx] = c; else list.push(c);
+    localStorage.setItem('dibersa_destajo_contratos', JSON.stringify(list));
+  },
+
+  async deleteDestajoContrato(id: string): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('destajo_pagos').delete().eq('contrato_id', id);
+        const { error } = await supabase.from('destajo_contratos').delete().eq('id', id);
+        if (error) throw error;
+        return;
+      } catch (_) {}
+    }
+    const list: import('../types').ContratoDestajo[] = JSON.parse(localStorage.getItem('dibersa_destajo_contratos') || '[]');
+    localStorage.setItem('dibersa_destajo_contratos', JSON.stringify(list.filter(x => x.id !== id)));
+  },
+
+  async saveDestajoPago(p: import('../types').PagoDestajo): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('destajo_pagos').upsert({
+          id: p.id,
+          contrato_id: p.contratoId,
+          fecha: p.fecha,
+          monto: p.monto,
+          descripcion: p.descripcion || null,
+        });
+        if (error) throw error;
+        return;
+      } catch (_) {}
+    }
+    // Stored embedded inside the contrato in localStorage
+  },
+
+  async deleteDestajoPago(pagoId: string): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('destajo_pagos').delete().eq('id', pagoId);
+        return;
+      } catch (_) {}
+    }
+  },
 };
