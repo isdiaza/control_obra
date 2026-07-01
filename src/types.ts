@@ -68,6 +68,7 @@ export interface Proveedor {
   address: string;
 }
 
+
 export interface Cliente {
   id: string;
   name: string;
@@ -75,4 +76,26 @@ export interface Cliente {
   phone: string;
   email: string;
   address: string;
+}
+
+export interface PagoDestajo {
+  id: string;
+  contratoId: string;
+  fecha: string;       // YYYY-MM-DD
+  monto: number;
+  descripcion?: string;
+}
+
+export interface ContratoDestajo {
+  id: string;
+  obra: string;            // nombre de la obra
+  concepto: string;        // descripcion del trabajo (ej: "Yeso en muros")
+  contratista: string;     // quien ejecuta
+  unidad: string;          // m2, ml, pieza, global, m3
+  cantidadTotal: number;   // unidades totales contratadas
+  precioUnitario: number;  // precio por unidad
+  cantidadAvance: number;  // unidades completadas
+  fechaInicio: string;     // YYYY-MM-DD
+  status: 'Activo' | 'Completado' | 'Pausado';
+  pagos: PagoDestajo[];    // historial de abonos
 }

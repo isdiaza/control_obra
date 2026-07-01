@@ -8,7 +8,7 @@ import { WorkerDirectory } from './WorkerDirectory';
 import { PayrollCharts } from './charts/PayrollCharts';
 import { ChatWidget } from './ChatWidget';
 import { FinancialControl } from './FinancialControl';
-import { TableProperties, BarChart3, Users, DollarSign, Percent, Construction, Coins, Settings, Truck, UserCheck, TrendingUp, TrendingDown, Landmark, Camera } from 'lucide-react';
+import { TableProperties, BarChart3, Users, DollarSign, Percent, Construction, Coins, Settings, Truck, UserCheck, TrendingUp, TrendingDown, Landmark, Camera, Hammer } from 'lucide-react';
 import { SettingsPanel } from './SettingsPanel';
 import { ObraDirectory } from './ObraDirectory';
 import { ProveedorDirectory } from './ProveedorDirectory';
@@ -16,8 +16,9 @@ import { ClienteDirectory } from './ClienteDirectory';
 import { ReporteFotografico } from './ReporteFotografico';
 import { HistorialReportes } from './HistorialReportes';
 import { Clock } from 'lucide-react';
+import DestajoDirectory from './DestajoDirectory';
 
-type TabType = 'worksheet' | 'analytics' | 'directory' | 'finances' | 'settings' | 'obras' | 'proveedores' | 'clientes' | 'reporte' | 'historial';
+type TabType = 'worksheet' | 'analytics' | 'directory' | 'finances' | 'settings' | 'obras' | 'proveedores' | 'clientes' | 'reporte' | 'historial' | 'destajo';
 
 export const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('analytics');
@@ -156,6 +157,14 @@ export const Dashboard: React.FC = () => {
           >
             <Construction size={18} />
             <span>Obras</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('destajo')}
+            className={`sidebar-btn ${activeTab === 'destajo' ? 'active' : ''}`}
+          >
+            <Hammer size={18} />
+            <span>Destajo</span>
           </button>
 
           <button
@@ -412,6 +421,14 @@ export const Dashboard: React.FC = () => {
                   companyInfo={companyInfo}
                 />
               </div>
+            )}
+
+            {/* Tab: Destajo Contracts */}
+            {activeTab === 'destajo' && (
+              <DestajoDirectory
+                obras={obras}
+                addTransaction={addTransaction}
+              />
             )}
 
             {/* Tab: Proveedores Directory */}
