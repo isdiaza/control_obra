@@ -4,7 +4,7 @@ import {
   TrendingUp, Clock, CheckCircle, PauseCircle, X, Save, CreditCard,
   AlertTriangle, Building2
 } from 'lucide-react';
-import type { ContratoDestajo, PagoDestajo, FinancialTransaction, Obra } from '../types';
+import type { ContratoDestajo, Obra } from '../types';
 import {
   useDestajoData,
   calcMontoContrato,
@@ -214,7 +214,19 @@ const ContratoCard: React.FC<{
 
 interface Props {
   obras: Obra[];
-  addTransaction: (tx: Omit<FinancialTransaction, 'id'>) => void;
+  addTransaction: (
+    description: string,
+    type: 'ingreso' | 'gasto',
+    category: string,
+    amount: number,
+    obra: string,
+    dateString: string,
+    proveedorId?: string,
+    materialName?: string,
+    quantity?: number,
+    unitPrice?: number,
+    clienteId?: string
+  ) => void;
 }
 
 const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {

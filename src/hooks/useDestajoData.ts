@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { ContratoDestajo, PagoDestajo, FinancialTransaction } from '../types';
-import { getWeekId } from './useAttendanceData';
+import type { ContratoDestajo, PagoDestajo } from '../types';
 import { dbService } from '../utils/dbService';
 
 // ─── Derived calculations (pure, exported for use in UI) ─────────────────────
@@ -33,7 +32,14 @@ interface UseDestajoDataReturn {
   addPago: (
     contratoId: string,
     pago: Omit<PagoDestajo, 'id' | 'contratoId'>,
-    onCreateTransaction: (tx: Omit<FinancialTransaction, 'id'>) => void
+    onCreateTransaction: (
+      description: string,
+      type: 'ingreso' | 'gasto',
+      category: string,
+      amount: number,
+      obra: string,
+      dateString: string
+    ) => void
   ) => Promise<void>;
   deletePago: (contratoId: string, pagoId: string) => Promise<void>;
 }
@@ -81,7 +87,14 @@ export function useDestajoData(): UseDestajoDataReturn {
     async (
       contratoId: string,
       pagoData: Omit<PagoDestajo, 'id' | 'contratoId'>,
-      onCreateTransaction: (tx: Omit<FinancialTransaction, 'id'>) => void
+      onCreateTransaction: (
+        description: string,
+        type: 'ingreso' | 'gasto',
+        category: string,
+        amount: number,
+        obra: string,
+        dateString: string
+      ) => void
     ) => {
       const pago: PagoDestajo = { ...pagoData, id: `p_${Date.now()}`, contratoId };
 
@@ -95,15 +108,14 @@ export function useDestajoData(): UseDestajoDataReturn {
         dbService.saveDestajoPago(pago).catch(console.error);
         dbService.saveDestajoContrato(updated).catch(console.error);
 
-        onCreateTransaction({
-          date: pagoData.fecha,
-          description: `Destajo: ${contrato.concepto} — ${contrato.contratista}`,
-          type: 'gasto',
-          category: 'Destajo',
-          amount: pagoData.monto,
-          obra: contrato.obra,
-          weekId: getWeekId(new Date(pagoData.fecha + 'T12:00:00')),
-        });
+        onCreateTransaction(
+          `Destajo: ${contrato.concepto} — ${contrato.contratista}`,
+          'gasto',
+          'Destajo',
+          pagoData.monto,
+          contrato.obra,
+          pagoData.fecha
+        );
 
         return next;
       });
