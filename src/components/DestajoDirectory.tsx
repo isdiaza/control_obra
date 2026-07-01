@@ -31,9 +31,9 @@ const statusIcon = (s: ContratoDestajo['status']) => {
 };
 
 const statusColor = (s: ContratoDestajo['status']) => {
-  if (s === 'Completado') return 'var(--color-success)';
-  if (s === 'Pausado') return 'var(--color-warning, #F59E0B)';
-  return 'var(--color-accent)';
+  if (s === 'Completado') return 'var(--success)';
+  if (s === 'Pausado') return 'var(--warning, #fbbf24)';
+  return 'var(--accent-primary)';
 };
 
 // ─── Empty form state ─────────────────────────────────────────────────────────
@@ -52,13 +52,13 @@ const emptyForm = (): Omit<ContratoDestajo, 'id' | 'pagos'> => ({
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-const ProgressBar: React.FC<{ pct: number; color?: string }> = ({ pct, color = 'var(--color-accent)' }) => (
-  <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 999, height: 8, width: '100%', overflow: 'hidden' }}>
+const ProgressBar: React.FC<{ pct: number; color?: string }> = ({ pct, color = 'var(--accent-primary)' }) => (
+  <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 999, height: 10, width: '100%', overflow: 'hidden' }}>
     <div
       style={{
         width: `${Math.min(100, pct)}%`,
         height: '100%',
-        background: pct >= 100 ? 'var(--color-success)' : color,
+        background: pct >= 100 ? 'var(--success)' : color,
         borderRadius: 999,
         transition: 'width 0.4s ease',
       }}
@@ -108,7 +108,7 @@ const ContratoCard: React.FC<{
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 Avance: {contrato.cantidadAvance.toLocaleString()} / {contrato.cantidadTotal.toLocaleString()} {contrato.unidad}
               </span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: avancePct >= 100 ? 'var(--color-success)' : 'var(--text-primary)' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: avancePct >= 100 ? 'var(--success)' : 'var(--text-primary)' }}>
                 {avancePct.toFixed(1)}%
               </span>
             </div>
