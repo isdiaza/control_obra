@@ -428,6 +428,7 @@ export const Dashboard: React.FC = () => {
               <DestajoDirectory
                 obras={obras}
                 addTransaction={addTransaction}
+                companyInfo={companyInfo}
               />
             )}
 

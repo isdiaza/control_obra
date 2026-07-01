@@ -4,7 +4,7 @@ import {
   TrendingUp, Clock, CheckCircle, PauseCircle, X, Save, CreditCard,
   AlertTriangle, Building2, Printer
 } from 'lucide-react';
-import type { ContratoDestajo, Obra } from '../types';
+import type { ContratoDestajo, Obra, CompanyInfo } from '../types';
 import {
   useDestajoData,
   calcMontoContrato,
@@ -227,9 +227,10 @@ interface Props {
     unitPrice?: number,
     clienteId?: string
   ) => void;
+  companyInfo: CompanyInfo;
 }
 
-const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
+const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction, companyInfo }) => {
   const { contratos, isLoading, addContrato, updateContrato, deleteContrato, addPago, deletePago } = useDestajoData();
 
   const [showForm, setShowForm] = useState(false);
@@ -314,8 +315,8 @@ const DestajoDirectory: React.FC<Props> = ({ obras, addTransaction }) => {
         <tbody>
           <tr>
             <td className="print-header-logo">
-              <div className="brand">DIBERSA</div>
-              <div className="subtitle">CONTROL DE OBRA Y FINANZAS</div>
+              <div className="brand">{companyInfo.name}</div>
+              <div className="subtitle">{companyInfo.subtitle}</div>
             </td>
             <td className="print-header-title">
               REPORTE DE CONTRATOS A DESTAJO
