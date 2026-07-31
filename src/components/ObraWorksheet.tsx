@@ -857,7 +857,6 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                 }}>
                   <td colSpan={3} style={{ 
                     padding: 'var(--space-md)', 
-                    color: 'var(--text-primary)', 
                     fontSize: '0.85rem',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em'
@@ -867,7 +866,6 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                   <td colSpan={6}></td>
                   <td style={{ 
                     textAlign: 'center', 
-                    color: 'var(--text-primary)', 
                     fontSize: '0.9rem',
                     fontFamily: 'monospace'
                   }}>
@@ -875,7 +873,6 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                   </td>
                   <td className="footer-payroll" style={{ 
                     textAlign: 'right', 
-                    color: 'var(--success)', 
                     fontSize: '1rem',
                     fontWeight: 800,
                     fontFamily: 'monospace'
@@ -969,13 +966,13 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
             {consolidatedGrouped && Object.keys(consolidatedGrouped).length > 0 && (
               <tbody className="grand-total-tbody">
                 <tr style={{ backgroundColor: 'var(--bg-input)', borderTop: '2px solid var(--border-color)', fontWeight: 700 }}>
-                  <td colSpan={3} style={{ padding: 'var(--space-md)', color: 'var(--text-primary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <td colSpan={3} style={{ padding: 'var(--space-md)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Total {filters.obra === 'Todas' ? 'Todas las Obras' : filters.obra} — {rangeLabel}
                   </td>
-                  <td style={{ textAlign: 'center', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'monospace' }}>
+                  <td style={{ textAlign: 'center', fontSize: '0.9rem', fontFamily: 'monospace' }}>
                     {totalDaysAttended} jor.
                   </td>
-                  <td className="footer-payroll" style={{ textAlign: 'right', color: 'var(--success)', fontSize: '1rem', fontWeight: 800, fontFamily: 'monospace' }}>
+                  <td className="footer-payroll" style={{ textAlign: 'right', fontSize: '1rem', fontWeight: 800, fontFamily: 'monospace' }}>
                     {formatCurrency(totalPayroll)}
                   </td>
                 </tr>

@@ -194,6 +194,18 @@ tr.obra-separator-row:hover {
   background-color: transparent !important;
 }
 
+tbody.grand-total-tbody tr {
+  background-color: var(--accent-primary) !important;
+}
+
+tbody.grand-total-tbody td {
+  color: #ffffff !important;
+}
+
+tbody.grand-total-tbody .footer-payroll {
+  color: #ffffff !important;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -586,6 +598,18 @@ tr.obra-separator-row:hover {
     background-color: #f3e8ff !important;
     font-weight: bold !important;
     color: #6d28d9 !important;
+  }
+
+  tbody.grand-total-tbody tr {
+    background-color: #6d28d9 !important; /* Brand purple background for grand total */
+  }
+
+  tbody.grand-total-tbody td {
+    color: #ffffff !important;
+  }
+
+  tbody.grand-total-tbody .footer-payroll {
+    color: #ffffff !important;
   }
 }
 
