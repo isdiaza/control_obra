@@ -183,6 +183,17 @@ tr.obra-group-subtotal:hover {
   background-color: transparent !important;
 }
 
+tr.obra-separator-row td {
+  background-color: transparent !important;
+  border: none !important;
+  height: 24px !important;
+  padding: 0 !important;
+}
+
+tr.obra-separator-row:hover {
+  background-color: transparent !important;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -528,6 +539,13 @@ tr.obra-group-subtotal:hover {
     padding-top: 0.5rem;
     font-size: 0.75rem;
     color: #475569 !important;
+  }
+
+  tr.obra-separator-row td {
+    background-color: transparent !important;
+    border: none !important;
+    height: 24px !important;
+    padding: 0 !important;
   }
 }
 

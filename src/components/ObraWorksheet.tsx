@@ -749,6 +749,11 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                         </td>
                         <td className="no-print"></td>
                       </tr>
+
+                      {/* Spacer Row to separate Obras */}
+                      <tr className="obra-separator-row">
+                        <td colSpan={12}></td>
+                      </tr>
                     </React.Fragment>
                   );
                 })
@@ -759,43 +764,44 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                   </td>
                 </tr>
               )}
+
+              {groupedData && Object.keys(groupedData).length > 0 && (
+                <tr style={{ 
+                  backgroundColor: 'var(--bg-input)', 
+                  borderTop: '2px solid var(--border-color)',
+                  fontWeight: 700
+                }}>
+                  <td colSpan={3} style={{ 
+                    padding: 'var(--space-md)', 
+                    color: 'var(--text-primary)', 
+                    fontSize: '0.85rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Total {filters.obra === 'Todas' ? 'Todas las Obras' : filters.obra}
+                  </td>
+                  <td colSpan={6}></td>
+                  <td style={{ 
+                    textAlign: 'center', 
+                    color: 'var(--text-primary)', 
+                    fontSize: '0.9rem',
+                    fontFamily: 'monospace'
+                  }}>
+                    {totalDaysAttended} jor.
+                  </td>
+                  <td className="footer-payroll" style={{ 
+                    textAlign: 'right', 
+                    color: 'var(--success)', 
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    fontFamily: 'monospace'
+                  }}>
+                    {formatCurrency(totalPayroll)}
+                  </td>
+                  <td className="no-print"></td>
+                </tr>
+              )}
             </tbody>
-            <tfoot>
-              <tr style={{ 
-                backgroundColor: 'var(--bg-input)', 
-                borderTop: '2px solid var(--border-color)',
-                fontWeight: 700
-              }}>
-                <td colSpan={3} style={{ 
-                  padding: 'var(--space-md)', 
-                  color: 'var(--text-primary)', 
-                  fontSize: '0.85rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}>
-                  Total {filters.obra === 'Todas' ? 'Todas las Obras' : filters.obra}
-                </td>
-                <td colSpan={6}></td>
-                <td style={{ 
-                  textAlign: 'center', 
-                  color: 'var(--text-primary)', 
-                  fontSize: '0.9rem',
-                  fontFamily: 'monospace'
-                }}>
-                  {totalDaysAttended} jor.
-                </td>
-                <td className="footer-payroll" style={{ 
-                  textAlign: 'right', 
-                  color: 'var(--success)', 
-                  fontSize: '1rem',
-                  fontWeight: 800,
-                  fontFamily: 'monospace'
-                }}>
-                  {formatCurrency(totalPayroll)}
-                </td>
-                <td className="no-print"></td>
-              </tr>
-            </tfoot>
           </table>
           ) : (
           /* ===== CONSOLIDATED VIEW (Month / Year) ===== */
@@ -859,6 +865,11 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                         <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 700 }}>{subtotalDays} jor.</td>
                         <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 800 }}>{formatCurrency(subtotalPago)}</td>
                       </tr>
+
+                      {/* Spacer Row to separate Obras */}
+                      <tr className="obra-separator-row">
+                        <td colSpan={5}></td>
+                      </tr>
                     </React.Fragment>
                   );
                 })
@@ -869,20 +880,21 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                   </td>
                 </tr>
               )}
+
+              {consolidatedGrouped && Object.keys(consolidatedGrouped).length > 0 && (
+                <tr style={{ backgroundColor: 'var(--bg-input)', borderTop: '2px solid var(--border-color)', fontWeight: 700 }}>
+                  <td colSpan={3} style={{ padding: 'var(--space-md)', color: 'var(--text-primary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Total {filters.obra === 'Todas' ? 'Todas las Obras' : filters.obra} — {rangeLabel}
+                  </td>
+                  <td style={{ textAlign: 'center', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'monospace' }}>
+                    {totalDaysAttended} jor.
+                  </td>
+                  <td className="footer-payroll" style={{ textAlign: 'right', color: 'var(--success)', fontSize: '1rem', fontWeight: 800, fontFamily: 'monospace' }}>
+                    {formatCurrency(totalPayroll)}
+                  </td>
+                </tr>
+              )}
             </tbody>
-            <tfoot>
-              <tr style={{ backgroundColor: 'var(--bg-input)', borderTop: '2px solid var(--border-color)', fontWeight: 700 }}>
-                <td colSpan={3} style={{ padding: 'var(--space-md)', color: 'var(--text-primary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Total {filters.obra === 'Todas' ? 'Todas las Obras' : filters.obra} — {rangeLabel}
-                </td>
-                <td style={{ textAlign: 'center', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'monospace' }}>
-                  {totalDaysAttended} jor.
-                </td>
-                <td className="footer-payroll" style={{ textAlign: 'right', color: 'var(--success)', fontSize: '1rem', fontWeight: 800, fontFamily: 'monospace' }}>
-                  {formatCurrency(totalPayroll)}
-                </td>
-              </tr>
-            </tfoot>
           </table>
           )}
         </div>
