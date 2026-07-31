@@ -104,6 +104,31 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
 
   const isConsolidatedView = reportRange !== 'semana';
 
+  // Executive summary data for print and screen
+  const executiveSummaryData = useMemo(() => {
+    const summary: { obraName: string; workersCount: number; totalDays: number; totalPayroll: number }[] = [];
+    
+    if (!isConsolidatedView) {
+      // Weekly view
+      Object.entries(groupedData).forEach(([obraName, rows]) => {
+        const workersCount = rows.length;
+        const totalPayroll = rows.reduce((sum, r) => sum + r.pagoSemanal, 0);
+        const totalDays = rows.reduce((sum, r) => sum + r.daysAttended, 0);
+        summary.push({ obraName, workersCount, totalDays, totalPayroll });
+      });
+    } else if (consolidatedGrouped) {
+      // Month / Year consolidated view
+      Object.entries(consolidatedGrouped).forEach(([obraName, rows]) => {
+        const workersCount = rows.length;
+        const totalPayroll = rows.reduce((sum, r) => sum + r.totalPago, 0);
+        const totalDays = rows.reduce((sum, r) => sum + r.totalDays, 0);
+        summary.push({ obraName, workersCount, totalDays, totalPayroll });
+      });
+    }
+    
+    return summary;
+  }, [isConsolidatedView, groupedData, consolidatedGrouped]);
+
   // Stats for consolidated view
   const consolidatedStats = useMemo(() => {
     if (!consolidatedData) return { totalPayroll: 0, totalDays: 0, totalWorkers: 0 };
@@ -515,6 +540,63 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Executive Summary Section (Visible on screen and print when viewing All Obras) */}
+      {filters.obra === 'Todas' && executiveSummaryData.length > 0 && (
+        <div className="card executive-summary-card" style={{ 
+          border: '1px solid var(--border-color)', 
+          backgroundColor: 'var(--bg-card)',
+          padding: 'var(--space-md)',
+          marginBottom: 'var(--space-lg)'
+        }}>
+          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: 'var(--space-md)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            📊 Resumen Ejecutivo de Raya por Obra
+          </div>
+          
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', textAlign: 'left' }}>
+                <th style={{ padding: '0.5rem 1.25rem', fontWeight: 600 }}>Frente de Obra</th>
+                <th style={{ padding: '0.5rem 1.25rem', fontWeight: 600, textAlign: 'center' }}>Colaboradores</th>
+                <th style={{ padding: '0.5rem 1.25rem', fontWeight: 600, textAlign: 'center' }}>Jornadas</th>
+                <th style={{ padding: '0.5rem 1.25rem', fontWeight: 600, textAlign: 'right' }}>Importe Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {executiveSummaryData.map((item) => (
+                <tr key={item.obraName} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: '0.6rem 1.25rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    📍 {item.obraName}
+                  </td>
+                  <td style={{ padding: '0.6rem 1.25rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    {item.workersCount}
+                  </td>
+                  <td style={{ padding: '0.6rem 1.25rem', textAlign: 'center', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                    {item.totalDays} jor.
+                  </td>
+                  <td style={{ padding: '0.6rem 1.25rem', textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                    {formatCurrency(item.totalPayroll)}
+                  </td>
+                </tr>
+              ))}
+              <tr className="summary-total-row" style={{ backgroundColor: 'rgba(139, 92, 246, 0.05)', fontWeight: 700 }}>
+                <td style={{ padding: '0.75rem 1.25rem', color: 'var(--text-primary)' }}>
+                  Total General
+                </td>
+                <td style={{ padding: '0.75rem 1.25rem', textAlign: 'center', color: 'var(--text-primary)' }}>
+                  {totalWorkers}
+                </td>
+                <td style={{ padding: '0.75rem 1.25rem', textAlign: 'center', color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                  {totalDaysAttended} jor.
+                </td>
+                <td style={{ padding: '0.75rem 1.25rem', textAlign: 'right', color: 'var(--success)', fontSize: '0.95rem', fontFamily: 'monospace' }}>
+                  {formatCurrency(totalPayroll)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Main Worksheet Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border-color)' }}>

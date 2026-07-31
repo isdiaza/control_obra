@@ -552,6 +552,41 @@ tr.obra-separator-row:hover {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
+
+  .executive-summary-card {
+    border: 1px solid #8b5cf6 !important; /* Professional purple border matching headers */
+    background-color: #faf5ff !important; /* Soft purple tint background */
+    padding: 1rem !important;
+    margin-bottom: 1.5rem !important;
+    border-radius: 8px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .executive-summary-card table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .executive-summary-card th {
+    border-bottom: 2px solid #8b5cf6 !important;
+    color: #6d28d9 !important;
+    font-weight: bold !important;
+    padding: 0.5rem !important;
+  }
+
+  .executive-summary-card td {
+    border-bottom: 1px solid #cbd5e1 !important;
+    padding: 0.5rem !important;
+    color: #1e293b !important;
+  }
+
+  .executive-summary-card tr.summary-total-row td {
+    border-top: 2px solid #8b5cf6 !important;
+    background-color: #f3e8ff !important;
+    font-weight: bold !important;
+    color: #6d28d9 !important;
+  }
 }
 
 /* App Layout & Sidebar Menu (Desktop) */
