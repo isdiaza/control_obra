@@ -64,7 +64,7 @@ export const PayrollCharts: React.FC<PayrollChartsProps> = ({
           if (att.jueves) days++;
           if (att.viernes) days++;
           if (att.sabado) days++;
-          payrollTotal += days * w.sueldoDiario;
+          payrollTotal += Math.floor(days * w.sueldoDiario);
         }
       });
 
@@ -89,7 +89,7 @@ export const PayrollCharts: React.FC<PayrollChartsProps> = ({
         if (att.jueves) days++;
         if (att.viernes) days++;
         if (att.sabado) days++;
-        const cost = days * w.sueldoDiario;
+        const cost = Math.floor(days * w.sueldoDiario);
         
         map[w.obra] = (map[w.obra] || 0) + cost;
       }
