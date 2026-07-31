@@ -80,7 +80,7 @@ export const Dashboard: React.FC = () => {
         if (att.jueves) days++;
         if (att.viernes) days++;
         if (att.sabado) days++;
-        const totalPay = Math.floor(days * w.sueldoDiario);
+        const totalPay = Math.round(days * w.sueldoDiario);
         payrolls[w.obra] = (payrolls[w.obra] || 0) + totalPay;
       }
     });

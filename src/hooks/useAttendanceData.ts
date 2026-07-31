@@ -499,7 +499,7 @@ export const useAttendanceData = () => {
         if (att.viernes) daysAttended++;
         if (att.sabado) daysAttended++;
 
-        const pagoSemanal = Math.floor(daysAttended * w.sueldoDiario);
+        const pagoSemanal = Math.round(daysAttended * w.sueldoDiario);
 
         return {
           worker: w,
@@ -565,7 +565,7 @@ export const useAttendanceData = () => {
           if (att.viernes) days++;
           if (att.sabado) days++;
 
-          payrollTotal += Math.floor(days * w.sueldoDiario);
+          payrollTotal += Math.round(days * w.sueldoDiario);
           presentCount += days;
           totalDaysPossible += 6;
         }

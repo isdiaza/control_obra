@@ -117,7 +117,7 @@ export const ObraDirectory: React.FC<ObraDirectoryProps> = ({
           if (att.jueves) days++;
           if (att.viernes) days++;
           if (att.sabado) days++;
-          payrollCost += Math.floor(days * w.sueldoDiario);
+          payrollCost += Math.round(days * w.sueldoDiario);
         }
       });
 

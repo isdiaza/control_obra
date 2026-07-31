@@ -85,7 +85,7 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
           if (att.sabado) totalDays++;
         }
       });
-      const totalPago = Math.floor(totalDays * w.sueldoDiario);
+      const totalPago = Math.round(totalDays * w.sueldoDiario);
       return { worker: w, totalDays, totalPago };
     });
   }, [reportRange, workers, attendance, rangeWeekIds, filters]);

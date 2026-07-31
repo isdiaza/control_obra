@@ -85,7 +85,7 @@ export const ChatWidget: React.FC = () => {
           if (att.jueves) days++;
           if (att.viernes) days++;
           if (att.sabado) days++;
-          return { worker: w, attendance: att, days, pay: Math.floor(days * w.sueldoDiario) };
+          return { worker: w, attendance: att, days, pay: Math.round(days * w.sueldoDiario) };
         });
       };
 
