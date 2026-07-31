@@ -535,237 +535,239 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                 <th style={{ textAlign: 'center', width: '90px' }} className="no-print">Acción Rápida</th>
               </tr>
             </thead>
-            <tbody>
-              {worksheetData.length > 0 ? (
-                Object.entries(groupedData).map(([obraName, rows]) => {
-                  const subtotalPayroll = rows.reduce((sum, r) => sum + r.pagoSemanal, 0);
-                  const subtotalDays = rows.reduce((sum, r) => sum + r.daysAttended, 0);
+            {worksheetData.length > 0 ? (
+              Object.entries(groupedData).map(([obraName, rows]) => {
+                const subtotalPayroll = rows.reduce((sum, r) => sum + r.pagoSemanal, 0);
+                const subtotalDays = rows.reduce((sum, r) => sum + r.daysAttended, 0);
 
-                  return (
-                    <React.Fragment key={obraName}>
-                      {/* Group Header Row */}
-                      <tr className="obra-group-header">
-                        <td colSpan={12} style={{ padding: '0.6rem 1rem', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          📍 Obra: {obraName}
-                        </td>
-                      </tr>
+                return (
+                  <tbody key={obraName} className="obra-group-tbody">
+                    {/* Group Header Row */}
+                    <tr className="obra-group-header">
+                      <td colSpan={12} style={{ padding: '0.6rem 1rem', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        📍 Obra: {obraName}
+                      </td>
+                    </tr>
 
-                      {/* Worker rows for this group */}
-                      {rows.map(({ worker, attendance: att, daysAttended, pagoSemanal }) => (
-                        <tr key={worker.id}>
-                          {/* Worker Info */}
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                              <div className="no-print" style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                backgroundColor: worker.avatarColor,
-                                color: 'white',
-                                fontWeight: 700,
-                                fontSize: '0.8rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-                              }}>
-                                {getInitials(worker.name)}
-                              </div>
-                              <div>
-                                <div className="worker-name">{worker.name}</div>
-                                <div className="no-print" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{worker.role}</div>
-                              </div>
+                    {/* Worker rows for this group */}
+                    {rows.map(({ worker, attendance: att, daysAttended, pagoSemanal }) => (
+                      <tr key={worker.id}>
+                        {/* Worker Info */}
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div className="no-print" style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              backgroundColor: worker.avatarColor,
+                              color: 'white',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                            }}>
+                              {getInitials(worker.name)}
                             </div>
-                          </td>
+                            <div>
+                              <div className="worker-name">{worker.name}</div>
+                              <div className="no-print" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{worker.role}</div>
+                            </div>
+                          </div>
+                        </td>
 
-                          {/* Obra */}
-                          <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                            {worker.obra}
-                          </td>
+                        {/* Obra */}
+                        <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                          {worker.obra}
+                        </td>
 
-                          {/* Sueldo Diario */}
-                          <td>
-                            <span className="print-only" style={{ fontFamily: 'monospace', textAlign: 'right', fontSize: '0.8rem', color: '#1e293b' }}>
-                              {formatCurrency(worker.sueldoDiario)}
-                            </span>
-                            <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>$</span>
-                              <input
-                                key={worker.id + '_' + worker.sueldoDiario}
-                                type="number"
-                                step="any"
-                                className="input"
-                                defaultValue={worker.sueldoDiario}
-                                onBlur={(e) => {
-                                  const val = Math.max(0, parseFloat(e.target.value) || 0);
+                        {/* Sueldo Diario */}
+                        <td>
+                          <span className="print-only" style={{ fontFamily: 'monospace', textAlign: 'right', fontSize: '0.8rem', color: '#1e293b' }}>
+                            {formatCurrency(worker.sueldoDiario)}
+                          </span>
+                          <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>$</span>
+                            <input
+                              key={worker.id + '_' + worker.sueldoDiario}
+                              type="number"
+                              step="any"
+                              className="input"
+                              defaultValue={worker.sueldoDiario}
+                              onBlur={(e) => {
+                                const val = Math.max(0, parseFloat(e.target.value) || 0);
+                                if (val !== worker.sueldoDiario) {
+                                  onUpdateWorker(worker.id, worker.name, worker.role, worker.obra, val);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const val = Math.max(0, parseFloat(e.currentTarget.value) || 0);
                                   if (val !== worker.sueldoDiario) {
                                     onUpdateWorker(worker.id, worker.name, worker.role, worker.obra, val);
                                   }
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    const val = Math.max(0, parseFloat(e.currentTarget.value) || 0);
-                                    if (val !== worker.sueldoDiario) {
-                                      onUpdateWorker(worker.id, worker.name, worker.role, worker.obra, val);
-                                    }
-                                    e.currentTarget.blur();
-                                  }
-                                }}
-                                style={{
-                                  width: '85px',
-                                  padding: '0.25rem 0.4rem',
-                                  fontSize: '0.85rem',
-                                  fontFamily: 'monospace',
-                                  textAlign: 'right',
-                                  backgroundColor: 'rgba(0,0,0,0.25)',
-                                }}
-                              />
-                            </div>
-                          </td>
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              style={{
+                                width: '85px',
+                                padding: '0.25rem 0.4rem',
+                                fontSize: '0.85rem',
+                                fontFamily: 'monospace',
+                                textAlign: 'right',
+                                backgroundColor: 'rgba(0,0,0,0.25)',
+                              }}
+                            />
+                          </div>
+                        </td>
 
-                          {/* Attendance checkmarks (Mon to Sat) */}
-                          {daysList.map(d => {
-                            const isPresent = att[d.key];
-                            return (
-                              <td key={d.key} style={{ textAlign: 'center' }}>
-                                <span className={`print-only-inline badge-${isPresent ? 'present' : 'absent'}`} style={{
-                                  width: '18px',
-                                  height: '18px',
+                        {/* Attendance checkmarks (Mon to Sat) */}
+                        {daysList.map(d => {
+                          const isPresent = att[d.key];
+                          return (
+                            <td key={d.key} style={{ textAlign: 'center' }}>
+                              <span className={`print-only-inline badge-${isPresent ? 'present' : 'absent'}`} style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '50%',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.65rem',
+                                fontWeight: 'bold',
+                                backgroundColor: isPresent ? '#d1fae5' : '#fee2e2',
+                                color: isPresent ? '#065f46' : '#991b1b',
+                                lineHeight: '18px',
+                                border: isPresent ? '1px solid #a7f3d0' : '1px solid #fecaca',
+                              }}>
+                                {isPresent ? '✓' : '✗'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => toggleAttendance(worker.id, filters.weekId, d.key)}
+                                className={`attendance-btn ${isPresent ? 'present' : 'absent'} no-print`}
+                                style={{
+                                  width: '28px',
+                                  height: '28px',
                                   borderRadius: '50%',
+                                  border: 'none',
+                                  backgroundColor: isPresent ? 'var(--success-bg)' : 'var(--danger-bg)',
+                                  color: isPresent ? 'var(--success)' : 'var(--danger)',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.15s, background-color 0.15s',
+                                  boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                title={isPresent ? 'Registrado: Asistencia' : 'Registrado: Falta'}
+                              >
+                                {isPresent ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
+                              </button>
+                            </td>
+                          );
+                        })}
+
+                        {/* Days Attended counter */}
+                        <td style={{ textAlign: 'center' }}>
+                          <span className={`badge ${daysAttended === 6 ? 'badge-present' : daysAttended > 0 ? 'badge-partial' : 'badge-absent'}`} style={{ 
+                            backgroundColor: daysAttended === 6 ? 'var(--success-bg)' : daysAttended > 0 ? 'var(--warning-bg)' : 'var(--danger-bg)', 
+                            color: daysAttended === 6 ? 'var(--success)' : daysAttended > 0 ? 'var(--warning)' : 'var(--danger)',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            fontSize: '0.8rem',
+                            padding: '0.2rem 0.6rem',
+                            fontFamily: 'monospace'
+                          }}>
+                            {daysAttended} / 6
+                          </span>
+                        </td>
+
+                        {/* Weekly Pay */}
+                        <td className="weekly-pay" style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {formatCurrency(pagoSemanal)}
+                        </td>
+
+                        {/* Quick present/absent all days */}
+                        <td style={{ textAlign: 'center' }} className="no-print">
+                          {toggleAllDays && (
+                            <div style={{ display: 'inline-flex', gap: '0.25rem' }}>
+                              <button
+                                onClick={() => toggleAllDays(worker.id, filters.weekId, true)}
+                                style={{
+                                  backgroundColor: 'var(--bg-input)',
+                                  border: '1px solid var(--border-color)',
+                                  color: 'var(--success)',
+                                  borderRadius: 'var(--radius-sm)',
+                                  padding: '0.2rem 0.35rem',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
                                   fontSize: '0.65rem',
-                                  fontWeight: 'bold',
-                                  backgroundColor: isPresent ? '#d1fae5' : '#fee2e2',
-                                  color: isPresent ? '#065f46' : '#991b1b',
-                                  lineHeight: '18px',
-                                  border: isPresent ? '1px solid #a7f3d0' : '1px solid #fecaca',
-                                }}>
-                                  {isPresent ? '✓' : '✗'}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAttendance(worker.id, filters.weekId, d.key)}
-                                  className={`attendance-btn ${isPresent ? 'present' : 'absent'} no-print`}
-                                  style={{
-                                    width: '28px',
-                                    height: '28px',
-                                    borderRadius: '50%',
-                                    border: 'none',
-                                    backgroundColor: isPresent ? 'var(--success-bg)' : 'var(--danger-bg)',
-                                    color: isPresent ? 'var(--success)' : 'var(--danger)',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: 'pointer',
-                                    transition: 'transform 0.15s, background-color 0.15s',
-                                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)',
-                                  }}
-                                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                  title={isPresent ? 'Registrado: Asistencia' : 'Registrado: Falta'}
-                                >
-                                  {isPresent ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
-                                </button>
-                              </td>
-                            );
-                          })}
-
-                          {/* Days Attended counter */}
-                          <td style={{ textAlign: 'center' }}>
-                            <span className={`badge ${daysAttended === 6 ? 'badge-present' : daysAttended > 0 ? 'badge-partial' : 'badge-absent'}`} style={{ 
-                              backgroundColor: daysAttended === 6 ? 'var(--success-bg)' : daysAttended > 0 ? 'var(--warning-bg)' : 'var(--danger-bg)', 
-                              color: daysAttended === 6 ? 'var(--success)' : daysAttended > 0 ? 'var(--warning)' : 'var(--danger)',
-                              border: '1px solid rgba(255,255,255,0.05)',
-                              fontSize: '0.8rem',
-                              padding: '0.2rem 0.6rem',
-                              fontFamily: 'monospace'
-                            }}>
-                              {daysAttended} / 6
-                            </span>
-                          </td>
-
-                          {/* Weekly Pay */}
-                          <td className="weekly-pay" style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                            {formatCurrency(pagoSemanal)}
-                          </td>
-
-                          {/* Quick present/absent all days */}
-                          <td style={{ textAlign: 'center' }} className="no-print">
-                            {toggleAllDays && (
-                              <div style={{ display: 'inline-flex', gap: '0.25rem' }}>
-                                <button
-                                  onClick={() => toggleAllDays(worker.id, filters.weekId, true)}
-                                  style={{
-                                    backgroundColor: 'var(--bg-input)',
-                                    border: '1px solid var(--border-color)',
-                                    color: 'var(--success)',
-                                    borderRadius: 'var(--radius-sm)',
-                                    padding: '0.2rem 0.35rem',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    fontSize: '0.65rem',
-                                  }}
-                                  title="Presente toda la semana"
-                                >
-                                  <UserCheck size={11} />
-                                </button>
-                                <button
-                                  onClick={() => toggleAllDays(worker.id, filters.weekId, false)}
-                                  style={{
-                                    backgroundColor: 'var(--bg-input)',
-                                    border: '1px solid var(--border-color)',
-                                    color: 'var(--danger)',
-                                    borderRadius: 'var(--radius-sm)',
-                                    padding: '0.2rem 0.35rem',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    fontSize: '0.65rem',
-                                  }}
-                                  title="Falta toda la semana"
-                                >
-                                  <UserX size={11} />
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-
-                      {/* Subtotal Row for this group */}
-                      <tr className="obra-group-subtotal">
-                        <td colSpan={2} style={{ paddingLeft: '2rem', fontStyle: 'italic', fontWeight: 600 }}>
-                          Subtotal {obraName}
+                                }}
+                                title="Presente toda la semana"
+                              >
+                                <UserCheck size={11} />
+                              </button>
+                              <button
+                                onClick={() => toggleAllDays(worker.id, filters.weekId, false)}
+                                style={{
+                                  backgroundColor: 'var(--bg-input)',
+                                  border: '1px solid var(--border-color)',
+                                  color: 'var(--danger)',
+                                  borderRadius: 'var(--radius-sm)',
+                                  padding: '0.2rem 0.35rem',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  fontSize: '0.65rem',
+                                }}
+                                title="Falta toda la semana"
+                              >
+                                <UserX size={11} />
+                              </button>
+                            </div>
+                          )}
                         </td>
-                        <td colSpan={7}></td>
-                        <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 700 }}>
-                          {subtotalDays} jor.
-                        </td>
-                        <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 800 }}>
-                          {formatCurrency(subtotalPayroll)}
-                        </td>
-                        <td className="no-print"></td>
                       </tr>
+                    ))}
 
-                      {/* Spacer Row to separate Obras */}
-                      <tr className="obra-separator-row">
-                        <td colSpan={12}></td>
-                      </tr>
-                    </React.Fragment>
-                  );
-                })
-              ) : (
+                    {/* Subtotal Row for this group */}
+                    <tr className="obra-group-subtotal">
+                      <td colSpan={2} style={{ paddingLeft: '2rem', fontStyle: 'italic', fontWeight: 600 }}>
+                        Subtotal {obraName}
+                      </td>
+                      <td colSpan={7}></td>
+                      <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 700 }}>
+                        {subtotalDays} jor.
+                      </td>
+                      <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 800 }}>
+                        {formatCurrency(subtotalPayroll)}
+                      </td>
+                      <td className="no-print"></td>
+                    </tr>
+
+                    {/* Spacer Row to separate Obras */}
+                    <tr className="obra-separator-row">
+                      <td colSpan={12}></td>
+                    </tr>
+                  </tbody>
+                );
+              })
+            ) : (
+              <tbody>
                 <tr>
                   <td colSpan={12} style={{ textAlign: 'center', padding: 'var(--space-xl)', color: 'var(--text-muted)' }}>
                     No se encontraron colaboradores para la obra o filtros seleccionados.
                   </td>
                 </tr>
-              )}
+              </tbody>
+            )}
 
-              {groupedData && Object.keys(groupedData).length > 0 && (
+            {groupedData && Object.keys(groupedData).length > 0 && (
+              <tbody className="grand-total-tbody">
                 <tr style={{ 
                   backgroundColor: 'var(--bg-input)', 
                   borderTop: '2px solid var(--border-color)',
@@ -800,8 +802,8 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                   </td>
                   <td className="no-print"></td>
                 </tr>
-              )}
-            </tbody>
+              </tbody>
+            )}
           </table>
           ) : (
           /* ===== CONSOLIDATED VIEW (Month / Year) ===== */
@@ -815,73 +817,75 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                 <th style={{ textAlign: 'right', width: '150px' }}>Pago {reportRange === 'mes' ? 'Mensual' : 'del Ejercicio'}</th>
               </tr>
             </thead>
-            <tbody>
-              {consolidatedGrouped && Object.keys(consolidatedGrouped).length > 0 ? (
-                Object.entries(consolidatedGrouped).map(([obraName, rows]) => {
-                  const subtotalPago = rows.reduce((s, r) => s + r.totalPago, 0);
-                  const subtotalDays = rows.reduce((s, r) => s + r.totalDays, 0);
-                  return (
-                    <React.Fragment key={obraName}>
-                      <tr className="obra-group-header">
-                        <td colSpan={5} style={{ padding: '0.6rem 1rem', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          📍 Obra: {obraName}
+            {consolidatedGrouped && Object.keys(consolidatedGrouped).length > 0 ? (
+              Object.entries(consolidatedGrouped).map(([obraName, rows]) => {
+                const subtotalPago = rows.reduce((s, r) => s + r.totalPago, 0);
+                const subtotalDays = rows.reduce((s, r) => s + r.totalDays, 0);
+                return (
+                  <tbody key={obraName} className="obra-group-tbody">
+                    <tr className="obra-group-header">
+                      <td colSpan={5} style={{ padding: '0.6rem 1rem', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        📍 Obra: {obraName}
+                      </td>
+                    </tr>
+                    {rows.map(({ worker, totalDays: tDays, totalPago: tPago }) => (
+                      <tr key={worker.id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div className="no-print" style={{
+                              width: '32px', height: '32px', borderRadius: '50%',
+                              backgroundColor: worker.avatarColor, color: 'white', fontWeight: 700,
+                              fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                            }}>{getInitials(worker.name)}</div>
+                            <div>
+                              <div className="worker-name">{worker.name}</div>
+                              <div className="no-print" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{worker.role}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{worker.obra}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatCurrency(worker.sueldoDiario)}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="badge" style={{
+                            backgroundColor: 'var(--accent-secondary)',
+                            color: 'white',
+                            fontSize: '0.8rem',
+                            padding: '0.2rem 0.6rem',
+                            fontFamily: 'monospace'
+                          }}>{tDays} jor.</span>
+                        </td>
+                        <td className="weekly-pay" style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {formatCurrency(tPago)}
                         </td>
                       </tr>
-                      {rows.map(({ worker, totalDays: tDays, totalPago: tPago }) => (
-                        <tr key={worker.id}>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                              <div className="no-print" style={{
-                                width: '32px', height: '32px', borderRadius: '50%',
-                                backgroundColor: worker.avatarColor, color: 'white', fontWeight: 700,
-                                fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-                              }}>{getInitials(worker.name)}</div>
-                              <div>
-                                <div className="worker-name">{worker.name}</div>
-                                <div className="no-print" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{worker.role}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{worker.obra}</td>
-                          <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{formatCurrency(worker.sueldoDiario)}</td>
-                          <td style={{ textAlign: 'center' }}>
-                            <span className="badge" style={{
-                              backgroundColor: 'var(--accent-secondary)',
-                              color: 'white',
-                              fontSize: '0.8rem',
-                              padding: '0.2rem 0.6rem',
-                              fontFamily: 'monospace'
-                            }}>{tDays} jor.</span>
-                          </td>
-                          <td className="weekly-pay" style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                            {formatCurrency(tPago)}
-                          </td>
-                        </tr>
-                      ))}
-                      <tr className="obra-group-subtotal">
-                        <td colSpan={2} style={{ paddingLeft: '2rem', fontStyle: 'italic', fontWeight: 600 }}>Subtotal {obraName}</td>
-                        <td></td>
-                        <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 700 }}>{subtotalDays} jor.</td>
-                        <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 800 }}>{formatCurrency(subtotalPago)}</td>
-                      </tr>
+                    ))}
+                    <tr className="obra-group-subtotal">
+                      <td colSpan={2} style={{ paddingLeft: '2rem', fontStyle: 'italic', fontWeight: 600 }}>Subtotal {obraName}</td>
+                      <td></td>
+                      <td style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 700 }}>{subtotalDays} jor.</td>
+                      <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 800 }}>{formatCurrency(subtotalPago)}</td>
+                    </tr>
 
-                      {/* Spacer Row to separate Obras */}
-                      <tr className="obra-separator-row">
-                        <td colSpan={5}></td>
-                      </tr>
-                    </React.Fragment>
-                  );
-                })
-              ) : (
+                    {/* Spacer Row to separate Obras */}
+                    <tr className="obra-separator-row">
+                      <td colSpan={5}></td>
+                    </tr>
+                  </tbody>
+                );
+              })
+            ) : (
+              <tbody>
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: 'var(--space-xl)', color: 'var(--text-muted)' }}>
                     No se encontraron colaboradores para este periodo.
                   </td>
                 </tr>
-              )}
+              </tbody>
+            )}
 
-              {consolidatedGrouped && Object.keys(consolidatedGrouped).length > 0 && (
+            {consolidatedGrouped && Object.keys(consolidatedGrouped).length > 0 && (
+              <tbody className="grand-total-tbody">
                 <tr style={{ backgroundColor: 'var(--bg-input)', borderTop: '2px solid var(--border-color)', fontWeight: 700 }}>
                   <td colSpan={3} style={{ padding: 'var(--space-md)', color: 'var(--text-primary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Total {filters.obra === 'Todas' ? 'Todas las Obras' : filters.obra} — {rangeLabel}
@@ -893,8 +897,8 @@ export const ObraWorksheet: React.FC<WorksheetProps> = ({
                     {formatCurrency(totalPayroll)}
                   </td>
                 </tr>
-              )}
-            </tbody>
+              </tbody>
+            )}
           </table>
           )}
         </div>

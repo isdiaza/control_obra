@@ -547,6 +547,11 @@ tr.obra-separator-row:hover {
     height: 24px !important;
     padding: 0 !important;
   }
+
+  tbody.obra-group-tbody {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
 }
 
 /* App Layout & Sidebar Menu (Desktop) */
